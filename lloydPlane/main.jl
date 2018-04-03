@@ -1,92 +1,138 @@
-using Cairo
+import PyPlot
+using PyCall
+plt = PyPlot
+@pyimport matplotlib.patches as patch
 
-function circumcircle(Ax, Ay, Bx, By, Cx, Cy)
-   Px = (Ax + Bx)/2
-   Py = (Ay + By)/2
+include("DCEL.jl")
+include("eventQueue.jl")
 
-   # v is a vector orthogonal to B-A; P + λv is the perpendicular bisector of AB, therefore the center of the circumcircle is in it
-   vx = Ay - By
-   vy = Bx - Ax
+using DataStructures
 
-   Qx = (Bx + Cx)/2
-   Qy = (By + Cy)/2
+Q = EventQueue.Heap()
 
-   # w is a vector orthogonal to C-B; Q + μw is the perpendicular bisector of BC, therefore the center of the circumcircle is in it
-   wx = By - Cy
-   wy = Cx - Bx
+WIDTH = 100
+HEIGHT = 100
+n = 2
 
-   λ = (wy*(Px - Qx) + wx*(Qy - Py)) / (wx*vy - wy*vx)
+points = zip(rand(1:WIDTH, n), rand(1:HEIGHT, n))
 
-   Cx = Px + λ*vx
-   Cy = Py + λ*vy
-
-   r = sqrt((Cx - Ax)^2 + (Cy - Ay)^2)
-
-   return Cx, Cy, r, Px, Py, Qx, Qy
+for p in points
+   EventQueue.push(Q, EventQueue.Event(p))
 end
 
-width = 800
-height = 800
+#T = SortedDict{Int, Int}()
 
-c = CairoRGBSurface(width,height)
-cr = CairoContext(c)
+plt.pygui(true)
+plt.title("Fortune's Algorithm")
+plt.ion()
+plt.clf()
 
-save(cr)
-set_source_rgb(cr, 1, 1, 1)
-rectangle(cr, 0.0, 0.0, width, height) # background
-fill(cr)
-restore(cr)
+ax = plt.gca() # get current axes
+ax[:set_aspect]("equal")
+ax[:set_xlim]([0, WIDTH])
+ax[:set_ylim]([0, HEIGHT])
+ax[:grid]("off")
+ax[:get_xaxis]()[:set_visible](false)
+ax[:get_yaxis]()[:set_visible](false)
+plt.draw()
 
-x = rand(30) * width
-y = rand(30) * height
+while true
+   if (p = EventQueue.pop(Q)) == nothing
+      break
+   end
+   
+   l = p.coordinates[2]
 
-set_source_rgba(cr, 0.2, 0.2, 1, 0.6)
-set_line_width(cr, 1.0)
-
-for point in zip(x, y)
-   arc(cr, point[1], point[2], 4.0, 0, 2*pi)
-   fill(cr)
+   plt.cla()
+   ax[:set_aspect]("equal")
+   ax[:set_xlim]([0, WIDTH])
+   ax[:set_ylim]([0, HEIGHT])
+   ax[:grid]("off")
+   ax[:get_xaxis]()[:set_visible](false)
+   ax[:get_yaxis]()[:set_visible](false)
+   for p in points
+      if p[2] < l
+         f = false
+      else
+         f = true
+      end
+      ax[:add_artist](patch.Circle((p[1], p[2]), alpha=0.5, color="k", radius=0.5, fill=f))
+   end
+   plt.plot([0, WIDTH], [l, l], color="b", linestyle="-", linewidth=2, alpha=0.5)
+   plt.draw()
+   println("aperte enter para continuar...")
+   readline(STDIN)
 end
-stroke(cr)
 
-#scatter(x, y, title="Delaunay Triangulation", label="")
-
-# considering now the triangle 0, 1, 2
-
-set_line_width(cr, 3.0);
-set_source_rgba(cr, 0, 0, 0, 0.6)
-move_to(cr, x[1], y[1])
-line_to(cr, x[2], y[2])
-line_to(cr, x[3], y[3])
-line_to(cr, x[1], y[1])
-stroke(cr)
-
-Cx, Cy, r, Px, Py, Qx, Qy = circumcircle(x[1], y[1], x[2], y[2], x[3], y[3])
-
-set_source_rgba(cr, 1, 0.2, 0.2, 0.6)
-arc(cr, Px, Py, 4.0, 0, 2*pi)
-arc(cr, Qx, Qy, 4.0, 0, 2*pi)
-fill(cr)
-
-move_to(cr, Px, Py)
-line_to(cr, Cx, Cy)
-move_to(cr, Qx, Qy)
-line_to(cr, Cx, Cy)
-stroke(cr)
-
-set_source_rgba(cr, 0.1, 0.6, 0.1, 0.6)
-arc(cr, Cx, Cy, 4.0, 0, 2*pi)
-fill(cr)
-
-arc(cr, Cx, Cy, r, 0, 2*pi)
-move_to(cr, Cx, Cy)
-line_to(cr, x[1], y[1])
-stroke(cr)
+#push!(T, 131=>1)
+#push!(Q, 32)
+#push!(Q, 24)
+#push!(Q, 55)
+#
 
 
 
 
 
 
-
-write_to_png(c,"fig.png")
+#function twins(a::DCEL.HalfEdge, b::DCEL.HalfEdge)
+#   a.twin = b
+#   b.twin = a
+#end
+#
+#function concat(a::DCEL.HalfEdge, b::DCEL.HalfEdge)
+#   a.next = b
+#   b.prev = a
+#end
+#
+#f1 = DCEL.Face(nothing)
+#f2 = DCEL.Face(nothing)
+#
+# e1 = DCEL.HalfEdge((0, 0), f1,      nothing, nothing, nothing)
+# e2 = DCEL.HalfEdge((0, 1), f1,      nothing, nothing, nothing)
+# e3 = DCEL.HalfEdge((1, 0), f1,      nothing, nothing, nothing)
+# 
+# e4 = DCEL.HalfEdge((1, 0), f2,      nothing, nothing, nothing)
+# e5 = DCEL.HalfEdge((0, 1), f2,      nothing, nothing, nothing)
+# e6 = DCEL.HalfEdge((1, 1), f2,      nothing, nothing, nothing)
+# 
+# e7 = DCEL.HalfEdge((0, 0), nothing, nothing, nothing, nothing)
+# e8 = DCEL.HalfEdge((0, 1), nothing, nothing, nothing, nothing)
+# e9 = DCEL.HalfEdge((1, 1), nothing, nothing, nothing, nothing)
+#e10 = DCEL.HalfEdge((1, 0), nothing, nothing, nothing, nothing)
+#
+#twins(e1,e7)
+#twins(e2,e4)
+#twins(e3,e10)
+#twins(e5,e8)
+#twins(e6,e9)
+#
+#concat(e1, e2)
+#concat(e2, e3)
+#concat(e3, e1)
+#
+#concat(e4, e5)
+#concat(e5, e6)
+#concat(e6, e4)
+#
+#f1.border = e1
+#f2.border = e4
+#
+#l = DCEL.List([f1, f2], [e1, e2, e3, e4, e5, e6, e7, e8, e9, e10])
+#
+#plt.pygui(true)
+#ax = plt.gca() # get current axes
+#ax[:set_xlim]([0, 1])
+#ax[:set_ylim]([0, 1])
+#plt.title("Fortune's Algorithm")
+#ax[:grid]("off")
+#ax[:get_xaxis]()[:set_visible](false)
+#ax[:get_yaxis]()[:set_visible](false)
+#
+#r = DCEL.regions(l)
+#
+#for region in r
+#   ax[:fill](region[1], region[2])
+#end
+#
+#plt.show()
