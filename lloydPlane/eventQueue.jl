@@ -9,6 +9,7 @@ function key(en::Event)
    return en.coordinates[2] # y coordinate
 end
 
+
 mutable struct Heap
    data::Array{Event}
    pos::Int # first empty position in the array

@@ -12,7 +12,7 @@ Q = EventQueue.Heap()
 
 WIDTH = 100
 HEIGHT = 100
-n = 2
+n = 20
 
 points = zip(rand(1:WIDTH, n), rand(1:HEIGHT, n))
 
@@ -23,27 +23,16 @@ end
 #T = SortedDict{Int, Int}()
 
 plt.pygui(true)
-plt.title("Fortune's Algorithm")
 plt.ion()
 plt.clf()
 
 ax = plt.gca() # get current axes
-ax[:set_aspect]("equal")
-ax[:set_xlim]([0, WIDTH])
-ax[:set_ylim]([0, HEIGHT])
-ax[:grid]("off")
-ax[:get_xaxis]()[:set_visible](false)
-ax[:get_yaxis]()[:set_visible](false)
-plt.draw()
 
-while true
-   if (p = EventQueue.pop(Q)) == nothing
-      break
-   end
-   
+while (p = EventQueue.pop(Q)) != nothing
    l = p.coordinates[2]
 
    plt.cla()
+   plt.title("Fortune's Algorithm")
    ax[:set_aspect]("equal")
    ax[:set_xlim]([0, WIDTH])
    ax[:set_ylim]([0, HEIGHT])
