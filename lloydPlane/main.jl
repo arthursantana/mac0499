@@ -1,57 +1,77 @@
-import PyPlot
-using PyCall
-plt = PyPlot
-@pyimport matplotlib.patches as patch
-
+include("geometry.jl")
 include("DCEL.jl")
 include("eventQueue.jl")
+include("beachLine.jl")
+include("fortune.jl")
+include("draw.jl")
 
-using DataStructures
+WIDTH = 100.0
+HEIGHT = 100.0
+n = 10
 
-Q = EventQueue.Heap()
+points = convert(Array{Tuple{Number, Number}}, collect(zip(rand(0.0:WIDTH, n), rand(0.0:HEIGHT, n))))
 
-WIDTH = 100
-HEIGHT = 100
-n = 20
+V, T, Q = Fortune.init(points)
 
-points = zip(rand(1:WIDTH, n), rand(1:HEIGHT, n))
+Draw.init(WIDTH, HEIGHT)
 
-for p in points
-   EventQueue.push(Q, EventQueue.Event(p))
-end
+while (event = EventQueue.pop(Q)) != nothing
+   ly = event.coordinates[2]
 
-#T = SortedDict{Int, Int}()
+   Fortune.handleEvent(V, T, Q, event) # multiple dispatch decides if it's a site event or circle event
 
-plt.pygui(true)
-plt.ion()
-plt.clf()
+	Draw.clear()
 
-ax = plt.gca() # get current axes
-
-while (p = EventQueue.pop(Q)) != nothing
-   l = p.coordinates[2]
-
-   plt.cla()
-   plt.title("Fortune's Algorithm")
-   ax[:set_aspect]("equal")
-   ax[:set_xlim]([0, WIDTH])
-   ax[:set_ylim]([0, HEIGHT])
-   ax[:grid]("off")
-   ax[:get_xaxis]()[:set_visible](false)
-   ax[:get_yaxis]()[:set_visible](false)
    for p in points
-      if p[2] < l
-         f = false
-      else
-         f = true
-      end
-      ax[:add_artist](patch.Circle((p[1], p[2]), alpha=0.5, color="k", radius=0.5, fill=f))
+		Draw.point(p, "black", (ly <= p[2]))
    end
-   plt.plot([0, WIDTH], [l, l], color="b", linestyle="-", linewidth=2, alpha=0.5)
-   plt.draw()
-   println("aperte enter para continuar...")
+
+	beachLineFoci = BeachLine.traverse(T)
+
+	for p in beachLineFoci
+		f = Geometry.parabola(p, ly)
+
+		if f == nothing # point is over the sweep line
+			Draw.line((p[1], ly), (p[1], HEIGHT), "green")
+		else
+			Draw.plot(f, "green")
+		end
+	end
+
+   for p in beachLineFoci
+      for q in beachLineFoci
+         if p[1] < q[1]
+            continue
+         elseif p[1] == q[1] && p[2] <= q[2]
+            continue
+         end
+
+         inter = Geometry.parabolaIntersection(p, q, ly)
+
+         if inter == nothing || size(inter)[1] == 0
+            continue
+         end
+
+         for point in inter
+            if 0 <= point[1] <= WIDTH && 0 <= point[2] <= HEIGHT && point[2] >= ly
+					Draw.point(point, "r", true)
+            end
+         end
+      end
+   end
+
+	Draw.line((0, ly), (WIDTH, ly), "b")
+	Draw.commit()
+   println("press Return to continue...")
    readline(STDIN)
 end
+
+
+
+
+
+
+
 
 #push!(T, 131=>1)
 #push!(Q, 32)

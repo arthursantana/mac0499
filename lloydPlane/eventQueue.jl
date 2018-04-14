@@ -1,12 +1,23 @@
 module EventQueue # max heap used for the event queue
 
 
-mutable struct Event
+abstract type Event end
+
+mutable struct SiteEvent <: Event
    coordinates::Tuple{Number, Number}
 end
 
-function key(en::Event)
-   return en.coordinates[2] # y coordinate
+function key(ev::SiteEvent)
+   return ev.coordinates[2] # y coordinate
+end
+
+
+mutable struct CircleEvent <: Event
+   coordinates::Tuple{Number, Number}
+end
+
+function key(ev::CircleEvent)
+   return ev.coordinates[2] # y coordinate
 end
 
 
@@ -26,6 +37,7 @@ end
 function Heap()
    return Heap(1)
 end
+
 
 function leftChild(i)
    return 2i
@@ -54,7 +66,7 @@ function largestChild(h::Heap, i::Int)
    end
 end
 
-function push(h::Heap, en::Event)
+function push(h::Heap, ev::Event)
    n = size(h.data)[1]
 
    if h.pos >= n # full
@@ -62,7 +74,7 @@ function push(h::Heap, en::Event)
    end
 
    i = h.pos
-   h.data[i] = en
+   h.data[i] = ev
 
    p = parent(i)
    while i > 1 && key(h.data[i]) > key(h.data[p])
@@ -106,34 +118,21 @@ function pop(h::Heap)
    return h.data[h.pos]
 end
 
-function heapPropertyOk(h::Heap)
-   ok = true
-
-   for i in 2:h.pos-1
-      if key(h.data[i]) > key(h.data[parent(i)])
-         ok = false
-      end
-   end
-
-   return ok
-end
-
-#h = Heap()
+#function heapPropertyIsOk(h::Heap) # for debugging
+#   ok = true
 #
-#println(pop(h))
+#   for i in 2:h.pos-1
+#      if key(h.data[i]) > key(h.data[parent(i)])
+#         ok = false
+#      end
+#   end
 #
-#println("\n\nDados gerados aleatoriamente:\n")
-#for i in rand(1:50, 15)
-#   println(Event(i, string(i)))
-#   push(h, Event(i, string(i)))
-#end
-#
-#println("\n\nRetirando em ordem do max-heap:\n")
-#while (x = pop(h)) != nothing
-#   println(x)
+#   return ok
 #end
 
-export Event
+
+export SiteEvent
+export CircleEvent
 export Heap
 export push
 export pop
