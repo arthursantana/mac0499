@@ -1,6 +1,8 @@
 module EventQueue # max heap used for the event queue
 
 
+using BeachLine
+
 abstract type Event end
 
 mutable struct SiteEvent <: Event
@@ -14,6 +16,8 @@ end
 
 mutable struct CircleEvent <: Event
    coordinates::Tuple{Number, Number}
+   disappearingArc #::Union{BeachLine.Arc, Void} --- I'm not type checking because I'm getting a weird Julia-specific error I don't wanna solve now
+                                                   # Cannot `convert` an object of type BeachLine.Arc to an object of type BeachLine.Arc
 end
 
 function key(ev::CircleEvent)

@@ -17,7 +17,7 @@ function parabolaIntersection(p::Tuple{Number, Number}, q::Tuple{Number, Number}
    g = parabola(q, ly)
 
    if p[2] == ly && q[2] == ly # both degenerate parabolas, should never happen (unless we have two points exactly equal, which should never happen by hypothesis)
-      return nothing
+      return []
    elseif p[2] == ly
       point = (p[1], g(p[1]))
       return [point, point]
@@ -39,7 +39,7 @@ function parabolaIntersection(p::Tuple{Number, Number}, q::Tuple{Number, Number}
       return [] # same parabola, doesn't count but let's not divide by zero
    end
 
-   if delta < 0 # no intersection
+   if delta < 0 # no intersection, should never happen between arcs on the beach line
       return []
    else # if delta == 0, we actually want to return duplicate entries
       x1 = (-b + sqrt(delta))/2a
@@ -49,33 +49,28 @@ function parabolaIntersection(p::Tuple{Number, Number}, q::Tuple{Number, Number}
    end
 end
 
-#function circumcircle(Ax, Ay, Bx, By, Cx, Cy)
-#   # P is the midpoint between A and B
-#   Px = (Ax + Bx)/2
-#   Py = (Ay + By)/2
-#
-#   # v is a vector orthogonal to B-A; P + λv is the perpendicular bisector of AB, therefore the center of the circumcircle is in it
-#   vx = Ay - By
-#   vy = Bx - Ax
-#
-#   # Q is the midpoint between B and C
-#   Qx = (Bx + Cx)/2
-#   Qy = (By + Cy)/2
-#
-#   # w is a vector orthogonal to C-B; Q + μw is the perpendicular bisector of BC, therefore the center of the circumcircle is in it
-#   wx = By - Cy
-#   wy = Cx - Bx
-#
-#   λ = (wy*(Px - Qx) + wx*(Qy - Py)) / (wx*vy - wy*vx)
-#
-#   Cx = Px + λ*vx
-#   Cy = Py + λ*vy
-#
-#   r = sqrt((Cx - Ax)^2 + (Cy - Ay)^2)
-#
-#   return Cx, Cy, r, Px, Py, Qx, Qy
-#end
-#
+function circumcircle(A::Tuple{Number, Number}, B::Tuple{Number, Number}, C::Tuple{Number, Number})
+   # P is the midpoint between A and B
+   P = ((A[1] + B[1])/2, (A[2] + B[2])/2)
+
+   # v is a vector orthogonal to B-A; P + λv is the perpendicular bisector of AB, therefore the center of the circumcircle is in it
+   v = (A[2] - B[2], B[1] - A[1])
+
+   # Q is the midpoint between B and C
+   Q = ((B[1] + C[1])/2, (B[2] + C[2])/2)
+
+   # w is a vector orthogonal to C-B; Q + μw is the perpendicular bisector of BC, therefore the center of the circumcircle is in it
+   w = (B[2] - C[2], C[1] - B[1])
+
+   λ = (w[2]*(P[1] - Q[1]) + w[1]*(Q[2] - P[2])) / (w[1]*v[2] - w[2]*v[1])
+
+   O = (P[1] + λ*v[1], P[2] + λ*v[2])
+
+   r = sqrt((O[1] - A[1])^2 + (O[2] - A[2])^2)
+
+   return O, r
+end
+
 #function someParabolaIsWrong() # for debugging
 #   NLINES = 1000
 #   NPOINTSFOREACHLINE = 1000

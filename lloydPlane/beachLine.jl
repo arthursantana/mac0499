@@ -1,34 +1,66 @@
 module BeachLine
 
 
-mutable struct Arc
-   coordinates::Tuple{Number, Number}
-end
+using Geometry
+using EventQueue
+using DCEL
 
-function key(a::Arc)
-   return a.coordinates[1]
+
+
+@enum SIDE LEFT RIGHT
+
+
+mutable struct Arc
+   focus::Tuple{Number, Number}
+   disappearsAt::Union{EventQueue.CircleEvent, Void}
+   prev::Union{Arc, Void}
+   next::Union{Arc, Void}
 end
 
 
 mutable struct Breakpoint
-   leftPoint::Tuple{Number, Number}
-   rightPoint::Tuple{Number, Number}
+   leftChild::Union{Arc, Breakpoint}
+   leftFocus::Tuple{Number, Number}
+   side::SIDE # indicates if this breakpoint is the left or right intersection between the parabolas
+   rightFocus::Tuple{Number, Number}
+   rightChild::Union{Arc, Breakpoint}
+   #edge::DCEL.HalfEdge
 end
 
-function key(b::Breakpoint)
-   return b.key
-end
+function breakpointX(node::Breakpoint, ly)
+   inter = Geometry.parabolaIntersection(node.leftFocus, node.rightFocus, ly)
+   s = size(inter)[1]
 
+   if s == 0
+      println("ZERO INTERSECTIONS! SHOULDN'T HAPPEN")
+   elseif s == 1
+      println("SINGLE INTERSECTION! SHOULDN'T HAPPEN")
+   end
 
-mutable struct Node
-   thing::Union{Arc, Breakpoint}
-   left::Union{Node, Void}
-   right::Union{Node, Void}
+   if s == 2 # decide which is the correct breakpoint to use
+      if node.side == LEFT
+         if inter[1][1] <= inter[2][1]
+            bp = inter[1]
+         else
+            bp = inter[2]
+         end
+      else # side == RIGHT
+         if inter[1][1] >= inter[2][1]
+            bp = inter[1]
+         else
+            bp = inter[2]
+         end
+      end
+   else
+      bp = inter[1]
+   end
+
+   return bp
 end
 
 
 mutable struct BST
-   root::Union{Node, Void}
+   root::Union{Arc, Breakpoint, Void}
 end
 
 function BST()
@@ -36,51 +68,76 @@ function BST()
 end
 
 
-function insert(T::BST, thing::Arc)
+function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
+   arc = Arc(coordinates, nothing, nothing, nothing)
+
    if T.root == nothing
-      T.root = Node(thing, nothing, nothing)
-   else
+      T.root = arc
+   else # look for the parabola immediately over arc.focus
+      parent = nothing
       node = T.root
-      while true
-         if key(thing) < key(node.thing)
-            child = node.left
+      side = LEFT # indicate which pointer from parent points to node
 
-            if child == nothing
-               node.left = Node(thing, nothing, nothing)
+      while !isa(node, Arc)
+         parent = node
 
-               return
-            end
+         bp = breakpointX(node, ly)[1]
+
+         if arc.focus[1] <= bp
+            node = node.leftChild
+            side = LEFT
          else
-            child = node.right
+            node = node.rightChild
+            side = RIGHT
+         end
+      end
 
-            if child == nothing
-               node.right = Node(thing, nothing, nothing)
+      # arrived at a leaf 'node'; switch it for subtree with tree leaves, 'arc' being the middle one, 'node' being on both the others
+      newNode = Arc(node.focus, node.disappearsAt, arc, node.next)
+      arc.prev = node
+      arc.next = newNode
+      node.next = arc
 
-               return
-            end
+      newSubTree = Breakpoint(node, node.focus, LEFT, arc.focus, Breakpoint(arc, arc.focus, RIGHT, node.focus, newNode))
+
+      if parent == nothing
+         T.root = newSubTree
+      else
+         if side == LEFT
+            parent.leftChild = newSubTree
+         else # RIGHT
+            parent.rightChild = newSubTree
          end
 
-         node = child
+         # TODO: BALANCE TREE
       end
    end
+
+   return arc
 end
 
 
+# traverse tree returning only the leaves and the breakpoint x coordinates between them
 # lazy version. if we wanted speed, should be iterative
-function traverse(T::BST)
-   function traverse(node::Union{Node, Void})
-      if node == nothing
-         return []
+# this is also O(n), it's only used so we can draw the beachLine
+# production version should not use this (see Fortune.compute())
+function beachLine(T::BST, ly)
+   function beachLine(node::Union{Arc, Breakpoint})
+      if isa(node, Arc)
+         return [node.focus]
+      else
+         return vcat(beachLine(node.leftChild), [breakpointX(node, ly)], beachLine(node.rightChild))
       end
-
-      return vcat(traverse(node.left), node.thing.coordinates, traverse(node.right))
    end
 
-   return traverse(T.root)
+   if T.root == nothing
+      return []
+   else
+      return beachLine(T.root)
+   end
 end
 
 
 export BST
-export Arc
 
 end # module

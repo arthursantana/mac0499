@@ -1,4 +1,7 @@
 module Fortune
+
+
+using Geometry
 using EventQueue
 using BeachLine
 using DCEL
@@ -19,29 +22,43 @@ function init(points::Array{Tuple{Number, Number}, 1})
 end
 
 function handleEvent(V::DCEL.List, T::BeachLine.BST, Q::EventQueue.Heap, event::EventQueue.SiteEvent)
-	#1. If T is empty, insert p i into it (so that T consists of a single leaf storing p i )
-	#and return. Otherwise, continue with steps 2– 5.
+   ly = event.coordinates[2] # sweep line
 
-	#2. Search in T for the arc α vertically above p i . If the leaf representing α has
-	#a pointer to a circle event in Q, then this circle event is a false alarm and it
-	#must be deleted from Q.
-
-	#3. Replace the leaf of T that represents α with a subtree having three leaves.
-	#The middle leaf stores the new site p i and the other two leaves store the site
-	#p j that was originally stored with α. Store the tuples p j , p i  and p i , p j 
-	#representing the new breakpoints at the two new internal nodes. Perform
-	#rebalancing operations on T if necessary.
-
-	BeachLine.insert(T, BeachLine.Arc(event.coordinates))
+	arc = BeachLine.insert(T, event.coordinates, ly)
 
 	#4. Create new half-edge records in the Voronoi diagram structure for the
 	#edge separating V(p i ) and V(p j ), which will be traced out by the two new
 	#breakpoints.
 
-	#5. Check the triple of consecutive arcs where the new arc for p i is the left arc
-	#to see if the breakpoints converge. If so, insert the circle event into Q and
-	#add pointers between the node in T and the node in Q. Do the same for the
-	#triple where the new arc is the right arc.
+   c = arc
+   b = arc.prev
+   if b != nothing
+      a = b.prev
+
+      if a != nothing # there's a triple with 'arc' on the rightmost position
+         # TODO: CHECK IF BREAKPOINTS CONVERGE
+         O, r = Geometry.circumcircle(a.focus, b.focus, c.focus)
+
+         ev = EventQueue.CircleEvent((O[1], O[2] - r), b)
+         b.disappearsAt = ev
+         EventQueue.push(Q, ev)
+      end
+   end
+
+   a = arc
+   b = arc.next
+   if b != nothing
+      c = b.next
+
+      if c != nothing # there's a triple with 'arc' on the leftmost position
+         # TODO: CHECK IF BREAKPOINTS CONVERGE
+         O, r = Geometry.circumcircle(a.focus, b.focus, c.focus)
+
+         ev = EventQueue.CircleEvent((O[1], O[2] - r), b)
+         b.disappearsAt = ev
+         EventQueue.push(Q, ev)
+      end
+   end
 end
 
 function handleEvent(V::DCEL.List, T::BeachLine.BST, Q::EventQueue.Heap, ev::EventQueue.CircleEvent)
@@ -63,6 +80,10 @@ function handleEvent(V::DCEL.List, T::BeachLine.BST, Q::EventQueue.Heap, ev::Eve
    #If so, insert the corresponding circle event into Q. and set pointers between
    #the new circle event in Q and the corresponding leaf of T. Do the same for
    #the triple where the former right neighbor is the middle arc.
+end
+
+function compute(points::Array{Tuple{Number, Number}, 1})
+   V, T, Q = init()
 end
 
 

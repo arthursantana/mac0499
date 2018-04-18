@@ -44,26 +44,34 @@ function commit()
    plt.draw()
 end
 
-function point(p::Tuple{Number, Number}, color, fill)
+
+function circle_Internal(p::Tuple{Number, Number}, color, fill, r, l)
    global ax
 
-   ax[:add_artist](patch.Circle((p[1], p[2]), alpha=0.5, color=color, radius=0.5, fill=fill))
+   ax[:add_artist](patch.Circle((p[1], p[2]), color=color, radius=r, fill=fill, zorder=3, linewidth=l))
+end
+
+function point(p::Tuple{Number, Number}, color, fill)
+   circle_Internal(p, color, fill, 0.5, 1)
+end
+
+function circle(p::Tuple{Number, Number}, color, r)
+   circle_Internal(p, color, false, r, 1)
 end
 
 function line(p1::Tuple{Number, Number}, p2::Tuple{Number, Number}, color)
    global plt
 
-   plt.plot([p1[1], p2[1]], [p1[2], p2[2]], color=color, linestyle="-", linewidth=2, alpha=0.5)
+   plt.plot([p1[1], p2[1]], [p1[2], p2[2]], color=color, linestyle="-", linewidth=3, zorder=1)
 end
 
-function plot(f, color)
+function plot(f, color, start, finish)
    global plt
-   global WIDTH, HEIGHT
 
-   x = linspace(0, WIDTH, 1000)
+   x = linspace(start, finish, 1000)
    y = map(f, x)
 
-   plt.plot(x, y, color=color, alpha=0.5, linewidth=2)
+   plt.plot(x, y, color=color, linewidth=3, zorder=2)
 end
 
 

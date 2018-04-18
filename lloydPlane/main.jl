@@ -9,63 +9,79 @@ WIDTH = 100.0
 HEIGHT = 100.0
 n = 10
 
-points = convert(Array{Tuple{Number, Number}}, collect(zip(rand(0.0:WIDTH, n), rand(0.0:HEIGHT, n))))
+points = convert(Array{Tuple{Number, Number}}, collect(zip(rand(1.0:WIDTH-1, n), rand(1.0:HEIGHT-1, n))))
+#points = convert(Array{Tuple{Number, Number}}, [(100,100), (20, 80), (40, 80), (30, 70), (10, 60)])
 
 V, T, Q = Fortune.init(points)
 
 Draw.init(WIDTH, HEIGHT)
 
 while (event = EventQueue.pop(Q)) != nothing
-   ly = event.coordinates[2]
+   ly = event.coordinates[2] # sweep line
 
    Fortune.handleEvent(V, T, Q, event) # multiple dispatch decides if it's a site event or circle event
 
 	Draw.clear()
 
    for p in points
-		Draw.point(p, "black", (ly <= p[2]))
+		Draw.point(p, "xkcd:navy", (ly <= p[2]))
    end
 
-	beachLineFoci = BeachLine.traverse(T)
+	beachLineFoci = BeachLine.beachLine(T, ly)
 
-	for p in beachLineFoci
+   start = (0, HEIGHT)
+   i = 2
+   while i <= size(beachLineFoci)[1] + 2
+      if i <= size(beachLineFoci)[1]
+         finish = beachLineFoci[i]
+      else
+         finish = (WIDTH, start[2])
+      end
+
+      p = beachLineFoci[i-1]
 		f = Geometry.parabola(p, ly)
 
 		if f == nothing # point is over the sweep line
-			Draw.line((p[1], ly), (p[1], HEIGHT), "green")
+         Draw.line((p[1], ly), (p[1], start[2]), "xkcd:azure")
 		else
-			Draw.plot(f, "green")
+         if 0 <= start[1]
+            st = start[1]
+         else
+            st = 0
+         end
+
+         if finish[1] <= WIDTH
+            fn = finish[1]
+         else
+            fn = WIDTH
+         end
+
+			Draw.plot(f, "xkcd:azure", st, fn)
 		end
+
+      start = finish
+      i += 2
 	end
 
-   for p in beachLineFoci
-      for q in beachLineFoci
-         if p[1] < q[1]
-            continue
-         elseif p[1] == q[1] && p[2] <= q[2]
-            continue
-         end
-
-         inter = Geometry.parabolaIntersection(p, q, ly)
-
-         if inter == nothing || size(inter)[1] == 0
-            continue
-         end
-
-         for point in inter
-            if 0 <= point[1] <= WIDTH && 0 <= point[2] <= HEIGHT && point[2] >= ly
-					Draw.point(point, "r", true)
-            end
-         end
+   i = 1
+   while i < Q.pos
+      if isa(Q.data[i], EventQueue.CircleEvent)
+         b = Q.data[i].disappearingArc
+         a = b.prev
+         c = b.next
+         O, r = Geometry.circumcircle(a.focus, b.focus, c.focus)
+         Draw.circle(O, "xkcd:orangered", r)
+         Draw.point((O[1], O[2] - r), "xkcd:magenta", false)
       end
+
+      i += 1
    end
 
-	Draw.line((0, ly), (WIDTH, ly), "b")
+	Draw.line((0, ly), (WIDTH, ly), "xkcd:gold")
 	Draw.commit()
    println("press Return to continue...")
    readline(STDIN)
 end
-
 
 
 
