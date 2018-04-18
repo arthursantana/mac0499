@@ -139,5 +139,6 @@ end
 
 
 export BST
+export Arc
 
 end # module

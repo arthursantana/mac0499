@@ -33,7 +33,7 @@ function clear()
    ax[:set_aspect]("equal")
    ax[:set_xlim]([0, WIDTH])
    ax[:set_ylim]([0, HEIGHT])
-   ax[:grid]("off")
+   ax[:grid](false)
    ax[:get_xaxis]()[:set_visible](false)
    ax[:get_yaxis]()[:set_visible](false)
 end
