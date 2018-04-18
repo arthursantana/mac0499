@@ -1,9 +1,9 @@
-include("geometry.jl")
+include("Geometry.jl")
 include("DCEL.jl")
-include("eventQueue.jl")
-include("beachLine.jl")
-include("fortune.jl")
-include("draw.jl")
+include("EventQueue.jl")
+include("BeachLine.jl")
+include("Fortune.jl")
+include("Draw.jl")
 
 WIDTH = 100.0
 HEIGHT = 100.0
