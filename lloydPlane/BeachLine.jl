@@ -19,11 +19,12 @@ end
 
 
 mutable struct Breakpoint
-   leftChild::Union{Arc, Breakpoint}
    leftFocus::Tuple{Number, Number}
-   side::SIDE # indicates if this breakpoint is the left or right intersection between the parabolas
    rightFocus::Tuple{Number, Number}
+   side::SIDE # indicates if this breakpoint is the left or right intersection between the parabolas
+   leftChild::Union{Arc, Breakpoint}
    rightChild::Union{Arc, Breakpoint}
+   
    #edge::DCEL.HalfEdge
 end
 
@@ -98,7 +99,7 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
       arc.next = newNode
       node.next = arc
 
-      newSubTree = Breakpoint(node, node.focus, LEFT, arc.focus, Breakpoint(arc, arc.focus, RIGHT, node.focus, newNode))
+      newSubTree = Breakpoint(node.focus, arc.focus, LEFT, node, Breakpoint(arc.focus, node.focus, RIGHT, arc, newNode))
 
       if parent == nothing
          T.root = newSubTree
@@ -114,6 +115,10 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
    end
 
    return arc
+end
+
+function remove(T::BST, coordinates::Tuple{Number, Number})
+   # TODO: fix breakpoints upwards (how exactly?)
 end
 
 

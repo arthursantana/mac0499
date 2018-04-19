@@ -61,21 +61,34 @@ function handleEvent(V::DCEL.List, T::BeachLine.BST, Q::EventQueue.Heap, event::
    end
 end
 
-function handleEvent(V::DCEL.List, T::BeachLine.BST, Q::EventQueue.Heap, ev::EventQueue.CircleEvent)
+function handleEvent(V::DCEL.List, T::BeachLine.BST, Q::EventQueue.Heap, event::EventQueue.CircleEvent)
+   arc = event.disappearingArc
+
+   if arc.prev != nothing
+      arc.prev.next = arc.next
+   end
+   if arc.next != nothing
+      arc.next.prev = arc.prev
+   end
+
    #1. Delete the leaf γ that represents the disappearing arc α from T. Update
    #the tuples representing the breakpoints at the internal nodes. Perform
-   #rebalancing operations on T if necessary. Delete all circle events involving
+   #rebalancing operations on T if necessary.
+
+	arc = BeachLine.remove(T, event.coordinates)
+   
+   #2. Delete all circle events involving
    #α from Q; these can be found using the pointers from the predecessor and
    #the successor of γ in T. (The circle event where α is the middle arc is
    #currently being handled, and has already been deleted from Q.)
 
-   #2. Add the center of the circle causing the event as a vertex record to the
+   #3. Add the center of the circle causing the event as a vertex record to the
    #doubly-connected edge list D storing the Voronoi diagram under construc-
    #tion. Create two half-edge records corresponding to the new breakpoint
    #of the beach line. Set the pointers between them appropriately. Attach the
    #three new records to the half-edge records that end at the vertex.
 
-   #3. Check the new triple of consecutive arcs that has the former left neighbor
+   #4. Check the new triple of consecutive arcs that has the former left neighbor
    #of α as its middle arc to see if the two breakpoints of the triple converge.
    #If so, insert the corresponding circle event into Q. and set pointers between
    #the new circle event in Q and the corresponding leaf of T. Do the same for
