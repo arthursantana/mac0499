@@ -65,6 +65,12 @@ function line(p1::Tuple{Number, Number}, p2::Tuple{Number, Number}, color)
    plt.plot([p1[1], p2[1]], [p1[2], p2[2]], color=color, linestyle="-", linewidth=3, zorder=1)
 end
 
+function thinLine(p1::Tuple{Number, Number}, p2::Tuple{Number, Number}, color)
+   global plt
+
+   plt.plot([p1[1], p2[1]], [p1[2], p2[2]], color=color, linestyle="-", linewidth=1, zorder=1)
+end
+
 function plot(f, color, start, finish)
    global plt
 

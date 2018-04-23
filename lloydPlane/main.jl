@@ -9,8 +9,9 @@ WIDTH = 100.0
 HEIGHT = 100.0
 n = 10
 
-points = convert(Array{Tuple{Number, Number}}, collect(zip(rand(1.0:WIDTH-1, n), rand(1.0:HEIGHT-1, n))))
-#points = convert(Array{Tuple{Number, Number}}, [(100,100), (20, 80), (40, 80), (30, 70), (10, 60)])
+#points = convert(Array{Tuple{Number, Number}}, collect(zip(rand(1.0:WIDTH-1, n), rand(1.0:HEIGHT-1, n))))
+points = convert(Array{Tuple{Number, Number}}, [(100,100), (20, 80), (40, 80), (30, 70), (10, 60)])
+#points = convert(Array{Tuple{Number, Number}}, [(40,40), (30, 30), (10, 25), (0, 0), (10, 9)])
 
 V, T, Q = Fortune.init(points)
 
@@ -24,10 +25,17 @@ while (event = EventQueue.pop(Q)) != nothing
 	Draw.clear()
 
    for p in points
-		Draw.point(p, "xkcd:navy", (ly <= p[2]))
+      Draw.point(p, "xkcd:navy", (ly <= p[2]))
+      if ly < p[2]
+         f = Geometry.parabola(p, ly)
+         Draw.plot(f, "xkcd:silver", 0, WIDTH)
+      end
    end
 
 	beachLineFoci = BeachLine.beachLine(T, ly)
+
+   BeachLine.printTree(T)
+   println(beachLineFoci)
 
    start = (0, HEIGHT)
    i = 2
@@ -71,7 +79,9 @@ while (event = EventQueue.pop(Q)) != nothing
          c = b.next
          O, r = Geometry.circumcircle(a.focus, b.focus, c.focus)
          Draw.circle(O, "xkcd:orangered", r)
-         Draw.point((O[1], O[2] - r), "xkcd:magenta", false)
+         Draw.thinLine(O, b.focus, "xkcd:orangered")
+         Draw.point(O, "xkcd:magenta", true)
+         Draw.point((O[1], O[2] - r), "xkcd:orangered", true)
       end
 
       i += 1

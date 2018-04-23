@@ -13,6 +13,7 @@ using DCEL
 mutable struct Arc
    focus::Tuple{Number, Number}
    disappearsAt::Union{EventQueue.CircleEvent, Void}
+   parent#::Union{Breakpoint, Void}
    prev::Union{Arc, Void}
    next::Union{Arc, Void}
 end
@@ -21,39 +22,20 @@ end
 mutable struct Breakpoint
    leftFocus::Tuple{Number, Number}
    rightFocus::Tuple{Number, Number}
-   side::SIDE # indicates if this breakpoint is the left or right intersection between the parabolas
+   parent::Union{Breakpoint, Void}
    leftChild::Union{Arc, Breakpoint}
    rightChild::Union{Arc, Breakpoint}
    
    #edge::DCEL.HalfEdge
 end
 
-function breakpointX(node::Breakpoint, ly)
-   inter = Geometry.parabolaIntersection(node.leftFocus, node.rightFocus, ly)
-   s = size(inter)[1]
+function findBreakpoint(node::Breakpoint, ly)
+   bp = Geometry.parabolaIntersection(node.leftFocus, node.rightFocus, ly)
 
-   if s == 0
+   println("break between ", node.leftFocus, " and ", node.rightFocus, " is ", bp)
+
+   if bp == nothing
       println("ZERO INTERSECTIONS! SHOULDN'T HAPPEN")
-   elseif s == 1
-      println("SINGLE INTERSECTION! SHOULDN'T HAPPEN")
-   end
-
-   if s == 2 # decide which is the correct breakpoint to use
-      if node.side == LEFT
-         if inter[1][1] <= inter[2][1]
-            bp = inter[1]
-         else
-            bp = inter[2]
-         end
-      else # side == RIGHT
-         if inter[1][1] >= inter[2][1]
-            bp = inter[1]
-         else
-            bp = inter[2]
-         end
-      end
-   else
-      bp = inter[1]
    end
 
    return bp
@@ -70,7 +52,7 @@ end
 
 
 function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
-   arc = Arc(coordinates, nothing, nothing, nothing)
+   arc = Arc(coordinates, nothing, nothing, nothing, nothing)
 
    if T.root == nothing
       T.root = arc
@@ -82,9 +64,9 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
       while !isa(node, Arc)
          parent = node
 
-         bp = breakpointX(node, ly)[1]
+         bp = findBreakpoint(node, ly)
 
-         if arc.focus[1] <= bp
+         if arc.focus[1] <= bp[1]
             node = node.leftChild
             side = LEFT
          else
@@ -94,12 +76,18 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
       end
 
       # arrived at a leaf 'node'; switch it for subtree with tree leaves, 'arc' being the middle one, 'node' being on both the others
-      newNode = Arc(node.focus, node.disappearsAt, arc, node.next)
+      newNode = Arc(node.focus, node.disappearsAt, nothing, arc, node.next)
       arc.prev = node
       arc.next = newNode
       node.next = arc
 
-      newSubTree = Breakpoint(node.focus, arc.focus, LEFT, node, Breakpoint(arc.focus, node.focus, RIGHT, arc, newNode))
+      childTree = Breakpoint(arc.focus, node.focus, nothing, arc, newNode)
+      newSubTree = Breakpoint(node.focus, arc.focus, parent, node, childTree)
+      
+      node.parent = newSubTree
+      childTree.parent = newSubTree
+      arc.parent = childTree
+      newNode.parent = childTree
 
       if parent == nothing
          T.root = newSubTree
@@ -117,8 +105,66 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
    return arc
 end
 
-function remove(T::BST, coordinates::Tuple{Number, Number})
-   # TODO: fix breakpoints upwards (how exactly?)
+function remove(T::BST, arc::Arc, coordinates::Tuple{Number, Number})
+   if arc == T.root
+      T.root = nothing
+
+      return
+   end
+
+
+   parent = arc.parent
+
+   if parent.leftChild == arc
+      other = parent.rightChild
+   else
+      other = parent.leftChild
+   end
+
+   other.parent = parent.parent
+
+   if parent.parent.leftChild == parent
+      parent.parent.leftChild = other
+   else
+      parent.parent.rightChild = other
+   end
+
+   println("vamos remover o arco ", arc.focus)
+
+   # fix breakpoints upwards
+   subTree = other
+
+   leftExtreme = rightExtreme = subTree
+   while isa(leftExtreme, Breakpoint)
+      leftExtreme = leftExtreme.leftChild
+   end
+   while isa(rightExtreme, Breakpoint)
+      rightExtreme = rightExtreme.rightChild
+   end
+
+   parent = subTree.parent
+   while parent != nothing
+      if leftExtreme == rightExtreme == nothing
+         break # nothing else upwards can change
+      end
+
+      if parent.leftChild == subTree
+         if rightExtreme != nothing
+            parent.leftFocus = rightExtreme.focus
+            rightExtreme = nothing # nothing means no change
+         end
+      else
+         if leftExtreme != nothing
+            parent.rightFocus = leftExtreme.focus
+            leftExtreme = nothing # nothing means no change
+         end
+      end
+
+      subTree = subTree.parent
+      parent = subTree.parent
+   end
+
+   # TODO: remove from the event queue any circle events with this arc
 end
 
 
@@ -131,7 +177,7 @@ function beachLine(T::BST, ly)
       if isa(node, Arc)
          return [node.focus]
       else
-         return vcat(beachLine(node.leftChild), [breakpointX(node, ly)], beachLine(node.rightChild))
+         return vcat(beachLine(node.leftChild), [findBreakpoint(node, ly)], beachLine(node.rightChild))
       end
    end
 
@@ -139,6 +185,43 @@ function beachLine(T::BST, ly)
       return []
    else
       return beachLine(T.root)
+   end
+end
+
+
+function printNode(node::Void, depth) # for debugging
+   return
+end
+
+function printNode(node::Arc, depth) # for debugging
+   for i in 1:depth
+      print(".")
+   end
+   if node.parent == nothing
+      print(node.focus, "; orphan")
+   else
+      print(node.focus, "; parent = ", node.parent.leftFocus, ",", node.parent.rightFocus)
+   end
+   println()
+end
+
+function printNode(node::Breakpoint, depth) # for debugging
+   for i in 1:depth
+      print(".")
+   end
+   if node.parent == nothing
+      print(node.leftFocus, node.rightFocus, "]; orphan")
+   else
+      print(node.leftFocus, node.rightFocus, "]; parent = ", node.parent.leftFocus, ",", node.parent.rightFocus)
+   end
+   println()
+   printNode(node.leftChild, depth+1)
+   printNode(node.rightChild, depth+1)
+end
+
+function printTree(T::BST) # for debugging
+   if T.root != nothing
+      printNode(T.root, 0)
    end
 end
 

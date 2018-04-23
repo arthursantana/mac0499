@@ -17,13 +17,13 @@ function parabolaIntersection(p::Tuple{Number, Number}, q::Tuple{Number, Number}
    g = parabola(q, ly)
 
    if p[2] == ly && q[2] == ly # both degenerate parabolas, should never happen (unless we have two points exactly equal, which should never happen by hypothesis)
-      return []
+      return nothing
    elseif p[2] == ly
       point = (p[1], g(p[1]))
-      return [point, point]
+      return point
    elseif q[2] == ly
       point = (q[1], f(q[1]))
-      return [point, point]
+      return point
    end
 
    r = p[2] - ly
@@ -35,17 +35,30 @@ function parabolaIntersection(p::Tuple{Number, Number}, q::Tuple{Number, Number}
 
    delta = b^2 - 4a*c # discriminant
 
-   if a == 0
-      return [] # same parabola, doesn't count but let's not divide by zero
+   if a == 0 # generating points of both parabolas have the same y
+      x = (p[1] + q[1])/2
+      return (x, f(x))
    end
 
    if delta < 0 # no intersection, should never happen between arcs on the beach line
-      return []
-   else # if delta == 0, we actually want to return duplicate entries
-      x1 = (-b + sqrt(delta))/2a
-      x2 = (-b - sqrt(delta))/2a
+      return nothing
+   else
+      x1 = (-b - sqrt(delta))/2a
+      x2 = (-b + sqrt(delta))/2a
 
-      return [(x1, f(x1)), (x2, f(x2))]
+      if p[2] > q[2] # use left intersection
+         if x1 < x2
+            return (x1, f(x1))
+         else
+            return (x2, f(x2))
+         end
+      else # use right intersection
+         if x1 > x2
+            return (x1, f(x1))
+         else
+            return (x2, f(x2))
+         end
+      end
    end
 end
 

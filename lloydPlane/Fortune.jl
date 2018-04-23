@@ -62,6 +62,8 @@ function handleEvent(V::DCEL.List, T::BeachLine.BST, Q::EventQueue.Heap, event::
 end
 
 function handleEvent(V::DCEL.List, T::BeachLine.BST, Q::EventQueue.Heap, event::EventQueue.CircleEvent)
+   ly = event.coordinates[2] # sweep line
+
    arc = event.disappearingArc
 
    if arc.prev != nothing
@@ -75,7 +77,7 @@ function handleEvent(V::DCEL.List, T::BeachLine.BST, Q::EventQueue.Heap, event::
    #the tuples representing the breakpoints at the internal nodes. Perform
    #rebalancing operations on T if necessary.
 
-	arc = BeachLine.remove(T, event.coordinates)
+   BeachLine.remove(T, event.disappearingArc, (event.coordinates[1], event.coordinates[2]))
    
    #2. Delete all circle events involving
    #α from Q; these can be found using the pointers from the predecessor and
