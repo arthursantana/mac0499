@@ -3,7 +3,7 @@ module BeachLine
 
 using Geometry
 using EventQueue
-using DCEL
+using Diagram
 
 
 
@@ -26,13 +26,11 @@ mutable struct Breakpoint
    leftChild::Union{Arc, Breakpoint}
    rightChild::Union{Arc, Breakpoint}
    
-   #edge::DCEL.HalfEdge
+   #edge::Diagram.HalfEdge
 end
 
 function findBreakpoint(node::Breakpoint, ly)
    bp = Geometry.parabolaIntersection(node.leftFocus, node.rightFocus, ly)
-
-   println("break between ", node.leftFocus, " and ", node.rightFocus, " is ", bp)
 
    if bp == nothing
       println("ZERO INTERSECTIONS! SHOULDN'T HAPPEN")
@@ -56,6 +54,7 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
 
    if T.root == nothing
       T.root = arc
+      node = nothing
    else # look for the parabola immediately over arc.focus
       parent = nothing
       node = T.root
@@ -76,9 +75,12 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
       end
 
       # arrived at a leaf 'node'; switch it for subtree with tree leaves, 'arc' being the middle one, 'node' being on both the others
-      newNode = Arc(node.focus, node.disappearsAt, nothing, arc, node.next)
+      newNode = Arc(node.focus, nothing, nothing, arc, node.next)
       arc.prev = node
       arc.next = newNode
+      if node.next != nothing
+         node.next.prev = newNode
+      end
       node.next = arc
 
       childTree = Breakpoint(arc.focus, node.focus, nothing, arc, newNode)
@@ -102,7 +104,7 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
       end
    end
 
-   return arc
+   return arc, node
 end
 
 function remove(T::BST, arc::Arc, coordinates::Tuple{Number, Number})
@@ -128,8 +130,6 @@ function remove(T::BST, arc::Arc, coordinates::Tuple{Number, Number})
    else
       parent.parent.rightChild = other
    end
-
-   println("vamos remover o arco ", arc.focus)
 
    # fix breakpoints upwards
    subTree = other
@@ -164,7 +164,7 @@ function remove(T::BST, arc::Arc, coordinates::Tuple{Number, Number})
       parent = subTree.parent
    end
 
-   # TODO: remove from the event queue any circle events with this arc
+   # TODO: BALANCE TREE
 end
 
 
@@ -210,9 +210,9 @@ function printNode(node::Breakpoint, depth) # for debugging
       print(".")
    end
    if node.parent == nothing
-      print(node.leftFocus, node.rightFocus, "]; orphan")
+      print(node.leftFocus, node.rightFocus, "; orphan")
    else
-      print(node.leftFocus, node.rightFocus, "]; parent = ", node.parent.leftFocus, ",", node.parent.rightFocus)
+      print(node.leftFocus, node.rightFocus, "; parent = ", node.parent.leftFocus, ",", node.parent.rightFocus)
    end
    println()
    printNode(node.leftChild, depth+1)

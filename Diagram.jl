@@ -1,29 +1,53 @@
-module DCEL # Doubly-connected edge list
+module Diagram
 
 
 abstract type halfEdge end # this hack is currently necessary for definition of circular types in Julia, see https://github.com/JuliaLang/julia/issues/269
 
-mutable struct Face
+mutable struct Region
    border::Union{halfEdge, Void} # first half edge of the border; we can traverse the border with he = he.next;
 end
 
 mutable struct HalfEdge <: halfEdge
    origin::Tuple{Number, Number}
 
-   incidentFace::Union{Face, Void}
+   incidentRegion::Union{Region, Void}
 
    twin::Union{HalfEdge, Void}
    next::Union{HalfEdge, Void}
    prev::Union{HalfEdge, Void}
 end
 
-mutable struct List
-   faces::Array{Face}
-   halfEdges::Array{HalfEdge}
+function twins(a::HalfEdge, b::HalfEdge)
+   a.twin = b
+   b.twin = a
+end
+
+function concat(a::HalfEdge, b::HalfEdge)
+   a.next = b
+   b.prev = a
 end
 
 
-function borderCoordinates(f::Face)
+mutable struct DCEL # Doubly-connected edge list
+   regions::Array{Region}
+   halfEdges::Array{HalfEdge}
+end
+
+function DCEL(points::Array{Tuple{Number, Number}, 1})
+	n = size(points)[1]
+
+   regions = Array{Region}(1, n);
+   for i in 1:n
+      regions[i] = Region(nothing)
+   end
+
+   halfEdges = HalfEdge[]
+
+	return Diagram.DCEL(regions, halfEdges)
+end
+
+
+function borderCoordinates(f::Region)
    x = []
    y = []
 
@@ -46,20 +70,23 @@ function borderCoordinates(f::Face)
    return x, y
 end
 
-function regions(l::List)
+function regionBorders(l::DCEL)
    borders = []
 
-   for face in l.faces
-      append!(borders, [borderCoordinates(face)])
+   for region in l.regions
+      append!(borders, [borderCoordinates(region)])
    end
 
    return borders
 end
 
-export List
+
+export DCEL
 export HalfEdge
-export Face
+export Region
 export regions
+export twins
+export concat
 
 
 end # module

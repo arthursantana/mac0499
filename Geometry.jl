@@ -84,16 +84,27 @@ function circumcircle(A::Tuple{Number, Number}, B::Tuple{Number, Number}, C::Tup
    return O, r
 end
 
+function distance(A::Tuple{Number, Number}, B::Tuple{Number, Number})
+   return sqrt((A[1]-B[1])^2 + (A[2]-B[2])^2)
+end
+
+# tests if middle arc of focus b will converge between foci a and c when the sweep line reaches ly
+function arcWillConverge(a::Tuple{Number, Number}, b::Tuple{Number, Number}, c::Tuple{Number, Number})
+   det = (b[1] - a[1])*(c[2] - a[2]) - (c[1] - a[1])*(b[2] - a[2])
+
+   if b[1] == 63 && b[2] == 72
+      println(a, b, c, "VAI CONVERGIR? ", (det < 0))
+   end
+
+   return (det < 0)
+end
+
 #function someParabolaIsWrong() # for debugging
 #   NLINES = 1000
 #   NPOINTSFOREACHLINE = 1000
 #
 #   function parabolaIsWrong(p::Tuple{Number, Number}, ly::Number)
 #      MAX_ERROR = 10^(-5.0)
-#
-#      function distance(A::Tuple{Number, Number}, B::Tuple{Number, Number})
-#         return sqrt((A[1]-B[1])^2 + (A[2]-B[2])^2)
-#      end
 #
 #      X = linspace(0, 100, 1000)
 #      f = parabola(p, ly)
@@ -120,8 +131,5 @@ end
 #   return false
 #end
 
-
-export parabola
-export parabolaIntersection
 
 end # module

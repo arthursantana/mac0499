@@ -16,6 +16,11 @@ mutable struct CircleEvent <: Event
    coordinates::Tuple{Number, Number}
    disappearingArc#::Union{BeachLine.Arc, Void} --- I'm not type checking because I'm getting a weird Julia-specific error I don't wanna solve now
                                                     # Cannot `convert` an object of type BeachLine.Arc to an object of type BeachLine.Arc
+   removed::Bool
+end
+
+function CircleEvent(c::Tuple{Number, Number}, arc)
+   return CircleEvent(c, arc, false)
 end
 
 function key(ev::CircleEvent)
@@ -93,31 +98,43 @@ function push(h::Heap, ev::Event)
 end
 
 function pop(h::Heap)
-   if h.pos == 1
-      return nothing # empty
-   end
+   resolved = false
 
-   h.pos -= 1
+   while !resolved
+      if h.pos == 1
+         return nothing # empty
+      end
 
-   # swap last element with root
-   last = h.pos
-   swap = h.data[1]
-   h.data[1] = h.data[last]
-   h.data[last] = swap
+      h.pos -= 1
 
-   i = 1
-   c = largestChild(h, i)
-   while c != -1 && key(h.data[c]) > key(h.data[i])
-      # trickle down
-      swap = h.data[i]
-      h.data[i] = h.data[c]
-      h.data[c] = swap
+      # swap last element with root
+      last = h.pos
+      swap = h.data[1]
+      h.data[1] = h.data[last]
+      h.data[last] = swap
 
-      i = c
+      i = 1
       c = largestChild(h, i)
+      while c != -1 && key(h.data[c]) > key(h.data[i])
+         # trickle down
+         swap = h.data[i]
+         h.data[i] = h.data[c]
+         h.data[c] = swap
+
+         i = c
+         c = largestChild(h, i)
+      end
+
+      if isa(h.data[h.pos], SiteEvent) || !(h.data[h.pos].removed)
+         resolved = true
+      end
    end
 
    return h.data[h.pos]
+end
+
+function remove(h::Heap, event::EventQueue.CircleEvent)
+   event.removed = true
 end
 
 #function heapPropertyIsOk(h::Heap) # for debugging
@@ -138,5 +155,6 @@ export CircleEvent
 export Heap
 export push
 export pop
+export remove
 
 end # module
