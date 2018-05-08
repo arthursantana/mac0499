@@ -22,7 +22,7 @@ function init(points::Array{Tuple{Number, Number}, 1})
 end
 
 function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, event::EventQueue.SiteEvent)
-   println("SITE EVENT: ", event.coordinates)
+   #println("SITE EVENT: ", event.coordinates)
    ly = event.coordinates[2] # sweep line
 
 	arc, arcAbove = BeachLine.insert(T, event.coordinates, ly)
@@ -43,7 +43,7 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
    x = event.coordinates[1]
    breakpoint = (x, f(x))
    he1 = Diagram.HalfEdge(breakpoint, nothing, nothing, nothing, nothing)
-   he2 = Diagram.HalfEdge(breakpoint, nothing, nothing, nothing, nothing)
+   he2 = Diagram.HalfEdge((breakpoint[1], breakpoint[2]+1), nothing, nothing, nothing, nothing)
    Diagram.twins(he1, he2)
    push!(V.halfEdges, he1)
    push!(V.halfEdges, he2)
@@ -82,7 +82,7 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
 end
 
 function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, event::EventQueue.CircleEvent)
-   println("CIRCLE EVENT: ", event.coordinates)
+   #println("CIRCLE EVENT: ", event.coordinates)
    ly = event.coordinates[2] # sweep line
 
    arc = event.disappearingArc
