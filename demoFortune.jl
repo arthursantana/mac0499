@@ -10,12 +10,12 @@ HEIGHT = 100.0
 n = 10
 
 points = convert(Array{Tuple{Number, Number}}, collect(zip(rand(1.0:WIDTH-1, n), rand(1.0:HEIGHT-1, n))))
-#points = convert(Array{Tuple{Number, Number}}, [(70,50), (30, 50), (50, 70), (50, 30)])
+#points = convert(Array{Tuple{Number, Number}}, [(70,50), (30, 50), (50, 70), (50, 30), (1, 1)])
 #points = convert(Array{Tuple{Number, Number}}, [(100,40), (20, 5), (40, 5), (3, 2), (1, 1)])
 #points = convert(Array{Tuple{Number, Number}}, [(80,40), (70, 40), (40, 5), (3, 2), (1, 1)])
 #points = convert(Array{Tuple{Number, Number}}, [(100,100), (20, 80), (40, 80), (30, 70), (10, 60), (20, 20), (30, 20), (40, 20)])
-#points = convert(Array{Tuple{Number, Number}}, [(40,40), (30, 30), (10, 25), (0, 0), (10, 9)])
-#points = convert(Array{Tuple{Number, Number}}, [(22.0, 2.0), (15.0, 57.0), (51.0, 22.0), (82.0, 50.0), (18.0, 81.0), (48.0, 52.0), (85.0, 74.0), (36.0, 21.0), (63.0, 72.0), (99.0, 53.0)])
+#points = convert(Array{Tuple{Number, Number}}, [(60,70), (50, 60), (30, 55), (20, 30), (30, 39)])
+#points = convert(Array{Tuple{Number, Number}}, [(22.0, 2.0), (15.0, 57.0), (51.0, 22.0), (82.0, 50.0), (18.0, 81.0), (48.0, 52.0), (85.0, 74.0), (36.0, 21.0), (63.0, 72.0), (89.0, 53.0)])
 #println(points)
 
 V, T, Q = Fortune.init(points)
@@ -122,7 +122,8 @@ while (event = EventQueue.pop(Q)) != nothing
          b = Q.data[i].disappearingArc
          a = b.prev
          c = b.next
-         O, r = Geometry.circumcircle(a.focus, b.focus, c.focus)
+         O = Q.data[i].center
+         r = O[2] - Q.data[i].coordinates[2]
          Draw.circle(O, "xkcd:orangered", r)
          Draw.thinLine(O, b.focus, "xkcd:orangered")
          Draw.point(O, "xkcd:magenta", true)
@@ -133,7 +134,7 @@ while (event = EventQueue.pop(Q)) != nothing
    end
 
    for he in V.halfEdges
-      Draw.line(he.origin, he.twin.origin, "xkcd:indigo")
+      Draw.line(he.origin, he.twin.origin, "xkcd:lime")
    end
 
    # draw sweepline
@@ -165,11 +166,11 @@ end
 # e9 = Diagram.HalfEdge((1, 1), nothing, nothing, nothing, nothing)
 #e10 = Diagram.HalfEdge((1, 0), nothing, nothing, nothing, nothing)
 #
-#twins(e1,e7)
-#twins(e2,e4)
-#twins(e3,e10)
-#twins(e5,e8)
-#twins(e6,e9)
+#makeTwins(e1,e7)
+#makeTwins(e2,e4)
+#makeTwins(e3,e10)
+#makeTwins(e5,e8)
+#makeTwins(e6,e9)
 #
 #concat(e1, e2)
 #concat(e2, e3)

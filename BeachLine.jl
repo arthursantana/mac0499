@@ -25,8 +25,7 @@ mutable struct Breakpoint
    parent::Union{Breakpoint, Void}
    leftChild::Union{Arc, Breakpoint}
    rightChild::Union{Arc, Breakpoint}
-   
-   #edge::Diagram.HalfEdge
+   halfEdge::Union{Diagram.HalfEdge, Void}
 end
 
 function findBreakpoint(node::Breakpoint, ly)
@@ -83,8 +82,8 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
       end
       node.next = arc
 
-      childTree = Breakpoint(arc.focus, node.focus, nothing, arc, newNode)
-      newSubTree = Breakpoint(node.focus, arc.focus, parent, node, childTree)
+      childTree = Breakpoint(arc.focus, node.focus, nothing, arc, newNode, nothing)
+      newSubTree = Breakpoint(node.focus, arc.focus, parent, node, childTree, nothing)
       
       node.parent = newSubTree
       childTree.parent = newSubTree
@@ -114,7 +113,6 @@ function remove(T::BST, arc::Arc, coordinates::Tuple{Number, Number})
       return
    end
 
-
    parent = arc.parent
 
    if parent.leftChild == arc
@@ -133,6 +131,7 @@ function remove(T::BST, arc::Arc, coordinates::Tuple{Number, Number})
 
    # fix breakpoints upwards
    subTree = other
+   newBreakpoint = nothing
 
    leftExtreme = rightExtreme = subTree
    while isa(leftExtreme, Breakpoint)
@@ -150,12 +149,18 @@ function remove(T::BST, arc::Arc, coordinates::Tuple{Number, Number})
 
       if parent.leftChild == subTree
          if rightExtreme != nothing
-            parent.leftFocus = rightExtreme.focus
+            if parent.leftFocus != rightExtreme.focus
+               parent.leftFocus = rightExtreme.focus
+               newBreakpoint = parent
+            end
             rightExtreme = nothing # nothing means no change
          end
       else
          if leftExtreme != nothing
-            parent.rightFocus = leftExtreme.focus
+            if parent.rightFocus != leftExtreme.focus
+               parent.rightFocus = leftExtreme.focus
+               newBreakpoint = parent
+            end
             leftExtreme = nothing # nothing means no change
          end
       end
@@ -164,21 +169,26 @@ function remove(T::BST, arc::Arc, coordinates::Tuple{Number, Number})
       parent = subTree.parent
    end
 
+   return newBreakpoint
+
    # TODO: BALANCE TREE
 end
 
 
-# traverse tree returning only the leaves and the breakpoint x coordinates between them
+# traverses tree returning only the leaves and the breakpoint x coordinates
+# between them; updates positions of the extremes of the Voronoi edges
 # lazy version. if we wanted speed, should be iterative
 # this is also O(n), it's only used so we can draw the beachLine
 # production version should not use this (see Fortune.compute())
 function beachLine(T::BST, ly)
-   function beachLine(node::Union{Arc, Breakpoint})
-      if isa(node, Arc)
-         return [node.focus]
-      else
-         return vcat(beachLine(node.leftChild), [findBreakpoint(node, ly)], beachLine(node.rightChild))
-      end
+   function beachLine(node::Arc)
+      return [node.focus]
+   end
+
+   function beachLine(node::Breakpoint)
+      bp = findBreakpoint(node, ly)
+      node.halfEdge.origin = bp
+      return vcat(beachLine(node.leftChild), [bp], beachLine(node.rightChild))
    end
 
    if T.root == nothing

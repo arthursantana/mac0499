@@ -14,13 +14,14 @@ end
 
 mutable struct CircleEvent <: Event
    coordinates::Tuple{Number, Number}
+   center::Tuple{Number, Number}
    disappearingArc#::Union{BeachLine.Arc, Void} --- I'm not type checking because I'm getting a weird Julia-specific error I don't wanna solve now
                                                     # Cannot `convert` an object of type BeachLine.Arc to an object of type BeachLine.Arc
    removed::Bool
 end
 
-function CircleEvent(c::Tuple{Number, Number}, arc)
-   return CircleEvent(c, arc, false)
+function CircleEvent(center::Tuple{Number, Number}, r, arc)
+   return CircleEvent((center[1], center[2] - r), center, arc, false)
 end
 
 function key(ev::CircleEvent)

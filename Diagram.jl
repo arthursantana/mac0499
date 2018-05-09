@@ -17,7 +17,7 @@ mutable struct HalfEdge <: halfEdge
    prev::Union{HalfEdge, Void}
 end
 
-function twins(a::HalfEdge, b::HalfEdge)
+function makeTwins(a::HalfEdge, b::HalfEdge)
    a.twin = b
    b.twin = a
 end
@@ -85,7 +85,7 @@ export DCEL
 export HalfEdge
 export Region
 export regions
-export twins
+export makeTwins
 export concat
 
 

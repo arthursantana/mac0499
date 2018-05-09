@@ -18,6 +18,7 @@ function init(w, h)
    plt.pygui(true)
    plt.ion()
    plt.clf()
+   #plt.xkcd() # uncomment for generalized wobbliness (for some reason only the axes are wobbly :( )
    ax = plt.gca() # get current axes
 
    WIDTH = w

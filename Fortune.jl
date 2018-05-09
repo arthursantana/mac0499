@@ -36,17 +36,20 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
       arcAbove.disappearsAt = nothing
    end
 
-	#4. Create new half-edge records in the Voronoi diagram structure for the
-	#edge separating V(p i ) and V(p j ), which will be traced out by the two new
-	#breakpoints.
+   rightBreakpoint = arc.parent;
+   leftBreakpoint = rightBreakpoint.parent;
+
+   # create half edge records for each new breakpoint
    f = Geometry.parabola(arcAbove.focus, ly)
    x = event.coordinates[1]
    breakpoint = (x, f(x))
    he1 = Diagram.HalfEdge(breakpoint, nothing, nothing, nothing, nothing)
-   he2 = Diagram.HalfEdge((breakpoint[1], breakpoint[2]+1), nothing, nothing, nothing, nothing)
-   Diagram.twins(he1, he2)
+   he2 = Diagram.HalfEdge(breakpoint, nothing, nothing, nothing, nothing)
+   Diagram.makeTwins(he1, he2)
    push!(V.halfEdges, he1)
    push!(V.halfEdges, he2)
+   leftBreakpoint.halfEdge = he1;
+   rightBreakpoint.halfEdge = he2;
 
    # check for new circle events where 'arc' is the rightmost arc
    c = arc
@@ -58,7 +61,7 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
       if a != nothing && Geometry.arcWillConverge(a.focus, b.focus, c.focus)
          O, r = Geometry.circumcircle(a.focus, b.focus, c.focus)
 
-         ev = EventQueue.CircleEvent((O[1], O[2] - r), b)
+         ev = EventQueue.CircleEvent(O, r, b)
          b.disappearsAt = ev
          EventQueue.push(Q, ev)
       end
@@ -74,7 +77,7 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
       if c != nothing && Geometry.arcWillConverge(a.focus, b.focus, c.focus)
          O, r = Geometry.circumcircle(a.focus, b.focus, c.focus)
 
-         ev = EventQueue.CircleEvent((O[1], O[2] - r), b)
+         ev = EventQueue.CircleEvent(O, r, b)
          b.disappearsAt = ev
          EventQueue.push(Q, ev)
       end
@@ -82,34 +85,45 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
 end
 
 function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, event::EventQueue.CircleEvent)
-   #println("CIRCLE EVENT: ", event.coordinates)
+   #println("CIRCLE EVENT: ", event.coordinates, event.center)
    ly = event.coordinates[2] # sweep line
-
    arc = event.disappearingArc
 
-   if arc.prev != nothing
-      arc.prev.next = arc.next
+   # find the Voronoi edges that are going to join together
+   leftBreakpoint = rightBreakpoint = arc.parent
+   while leftBreakpoint.leftFocus != arc.prev.focus ||
+         leftBreakpoint.rightFocus != arc.focus
+      leftBreakpoint = leftBreakpoint.parent
    end
-   if arc.next != nothing
-      arc.next.prev = arc.prev
+   while rightBreakpoint.leftFocus != arc.focus ||
+         rightBreakpoint.rightFocus != arc.next.focus
+      rightBreakpoint = rightBreakpoint.parent
    end
 
-   BeachLine.remove(T, event.disappearingArc, (event.coordinates[1], event.coordinates[2]))
+   # fix the extremes of the joining Voronoi edges
+   leftBreakpoint.halfEdge.origin = rightBreakpoint.halfEdge.origin = event.center
 
-   if arc.prev != nothing && arc.prev.disappearsAt != nothing
+   arc.prev.next = arc.next
+   arc.next.prev = arc.prev
+   newBreakpoint = BeachLine.remove(T, event.disappearingArc, (event.coordinates[1], event.coordinates[2]))
+
+   # create new half edge for the newly formed breakpoint
+   he1 = Diagram.HalfEdge(event.center, nothing, nothing, nothing, nothing)
+   he2 = Diagram.HalfEdge(event.center, nothing, nothing, nothing, nothing)
+   Diagram.makeTwins(he1, he2)
+   push!(V.halfEdges, he1)
+   push!(V.halfEdges, he2)
+   newBreakpoint.halfEdge = he1; # he2 is already bound to the vertex
+
+   # remove circle events of triples that don't exist anymore
+   if arc.prev.disappearsAt != nothing
       EventQueue.remove(Q, arc.prev.disappearsAt)
       arc.prev.disappearsAt = nothing
    end
-   if arc.next != nothing && arc.next.disappearsAt != nothing
+   if arc.next.disappearsAt != nothing
       EventQueue.remove(Q, arc.next.disappearsAt)
       arc.next.disappearsAt = nothing
    end
-
-   #3. Add the center of the circle causing the event as a vertex record to the
-   #doubly-connected edge list D storing the Voronoi diagram under construc-
-   #tion. Create two half-edge records corresponding to the new breakpoint
-   #of the beach line. Set the pointers between them appropriately. Attach the
-   #three new records to the half-edge records that end at the vertex.
 
    # check the left new triple of adjacent arcs for circle events
    if arc.prev != nothing && arc.next != nothing && arc.prev.prev != nothing
@@ -120,7 +134,7 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
       if Geometry.arcWillConverge(a.focus, b.focus, c.focus)
          O, r = Geometry.circumcircle(a.focus, b.focus, c.focus)
 
-         ev = EventQueue.CircleEvent((O[1], O[2] - r), b)
+         ev = EventQueue.CircleEvent(O, r, b)
          b.disappearsAt = ev
          EventQueue.push(Q, ev)
       end
@@ -135,7 +149,7 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
       if Geometry.arcWillConverge(a.focus, b.focus, c.focus)
          O, r = Geometry.circumcircle(a.focus, b.focus, c.focus)
 
-         ev = EventQueue.CircleEvent((O[1], O[2] - r), b)
+         ev = EventQueue.CircleEvent(O, r, b)
          b.disappearsAt = ev
          EventQueue.push(Q, ev)
       end

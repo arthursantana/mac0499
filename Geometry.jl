@@ -92,10 +92,6 @@ end
 function arcWillConverge(a::Tuple{Number, Number}, b::Tuple{Number, Number}, c::Tuple{Number, Number})
    det = (b[1] - a[1])*(c[2] - a[2]) - (c[1] - a[1])*(b[2] - a[2])
 
-   if b[1] == 63 && b[2] == 72
-      println(a, b, c, "VAI CONVERGIR? ", (det < 0))
-   end
-
    return (det < 0)
 end
 
