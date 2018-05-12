@@ -7,8 +7,9 @@ import Draw
 
 WIDTH = 100.0
 HEIGHT = 100.0
-n = 10
+n = 50
 
+srand(1)
 points = convert(Array{Tuple{Number, Number}}, collect(zip(rand(1.0:WIDTH-1, n), rand(1.0:HEIGHT-1, n))))
 #points = convert(Array{Tuple{Number, Number}}, [(70,50), (30, 50), (50, 70), (50, 30), (1, 1)])
 #points = convert(Array{Tuple{Number, Number}}, [(100,40), (20, 5), (40, 5), (3, 2), (1, 1)])
