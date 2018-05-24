@@ -187,7 +187,7 @@ function beachLine(T::BST, ly)
 
    function beachLine(node::Breakpoint)
       bp = findBreakpoint(node, ly)
-      node.halfEdge.origin = bp
+      #node.halfEdge.origin = bp
       return vcat(beachLine(node.leftChild), [bp], beachLine(node.rightChild))
    end
 

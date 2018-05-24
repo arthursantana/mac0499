@@ -151,6 +151,7 @@ end
 #end
 
 
+export Event
 export SiteEvent
 export CircleEvent
 export Heap

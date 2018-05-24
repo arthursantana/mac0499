@@ -4,6 +4,11 @@ import PyPlot
 using PyCall
 @pyimport matplotlib.patches as patch
 
+using Geometry
+using Diagram
+using BeachLine
+using EventQueue
+
 
 plt = PyPlot
 ax = nothing
@@ -79,6 +84,125 @@ function plot(f, color, start, finish)
    y = map(f, x)
 
    plt.plot(x, y, color=color, linewidth=3, zorder=2)
+end
+
+
+
+
+function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, points::Array{Tuple{Number, Number}}, ly::Number)
+	Draw.clear()
+
+   # draw points
+   for p in points
+      Draw.point(p, "xkcd:navy", (ly <= p[2]))
+      if ly < p[2]
+         f = Geometry.parabola(p, ly)
+         Draw.plot(f, "xkcd:silver", 0, WIDTH)
+      end
+   end
+
+   # calculate parabolas and breakpoints
+	beachLineFoci = BeachLine.beachLine(T, ly)
+
+   ### DEBUGGING SECTION
+   #BeachLine.printTree(T)
+   #println(beachLineFoci)
+
+   ## print x foci of beach line, without breakpoints
+   #i = 1
+   #while i <= size(beachLineFoci)[1]
+   #   print(beachLineFoci[i][1], " ")
+   #   i += 2
+   #end
+   #println()
+
+   ## print forward list of beachline arcs x's
+   #a = T.root
+   #if a != nothing
+   #   while !isa(a, BeachLine.Arc)
+   #      a = a.leftChild
+   #   end
+   #   while a != nothing
+   #      print(a.focus[1], " ")
+   #      a = a.next
+   #   end
+   #end
+   #println()
+
+   ## print backwards list of beachline arcs x's
+   #a = T.root
+   #if a != nothing
+   #   while !isa(a, BeachLine.Arc)
+   #      a = a.rightChild
+   #   end
+   #   while a != nothing
+   #      print(a.focus[1], " ")
+   #      a = a.prev
+   #   end
+   #end
+   #println()
+   ### DEBUGGING SECTION END
+
+   # draw beachline
+   start = (0, HEIGHT)
+   i = 2
+   while i <= size(beachLineFoci)[1] + 2
+      if i <= size(beachLineFoci)[1]
+         finish = beachLineFoci[i]
+      else
+         finish = (WIDTH, start[2])
+      end
+
+      p = beachLineFoci[i-1]
+		f = Geometry.parabola(p, ly)
+
+		if f == nothing # point is over the sweep line
+         Draw.line((p[1], ly), (p[1], start[2]), "xkcd:azure")
+		else
+         if 0 <= start[1]
+            st = start[1]
+         else
+            st = 0
+         end
+
+         if finish[1] <= WIDTH
+            fn = finish[1]
+         else
+            fn = WIDTH
+         end
+
+			Draw.plot(f, "xkcd:azure", st, fn)
+		end
+
+      start = finish
+      i += 2
+	end
+
+   # draw circumcircles
+   i = 1
+   while i < Q.pos
+      if isa(Q.data[i], EventQueue.CircleEvent) && !(Q.data[i].removed)
+         b = Q.data[i].disappearingArc
+         a = b.prev
+         c = b.next
+         O = Q.data[i].center
+         r = O[2] - Q.data[i].coordinates[2]
+         Draw.circle(O, "xkcd:orangered", r)
+         Draw.thinLine(O, b.focus, "xkcd:orangered")
+         Draw.point(O, "xkcd:magenta", true)
+         Draw.point((O[1], O[2] - r), "xkcd:orangered", true)
+      end
+
+      i += 1
+   end
+
+   for he in V.halfEdges
+      Draw.line(he.origin, he.twin.origin, "xkcd:lime")
+   end
+
+   # draw sweepline
+	Draw.line((0, ly), (WIDTH, ly), "xkcd:gold")
+	Draw.commit()
 end
 
 
