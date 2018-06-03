@@ -14,18 +14,18 @@ function init(points::Array{Tuple{Number, Number}, 1})
 	T = BeachLine.BST()
 	Q = EventQueue.Heap(3n) # enough, see page 166 on BCKO (de Berg, Cheong, Kreveld, Overmars)
 
-	for p in points
-		EventQueue.push(Q, EventQueue.SiteEvent(p))
+	for region in V.regions
+		EventQueue.push(Q, EventQueue.SiteEvent(region))
 	end
 
 	return V, T, Q
 end
 
 function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, event::EventQueue.SiteEvent)
-   #println("SITE EVENT: ", event.coordinates)
-   ly = event.coordinates[2] # sweep line
+   #println("SITE EVENT: ", event.region.generator)
+   ly = event.region.generator[2] # sweep line
 
-	arc, arcAbove = BeachLine.insert(T, event.coordinates, ly)
+	arc, arcAbove = BeachLine.insert(T, event.region.generator, ly)
 
    if arcAbove == nothing
       return
@@ -36,20 +36,21 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
       arcAbove.disappearsAt = nothing
    end
 
-   rightBreakpoint = arc.parent;
-   leftBreakpoint = rightBreakpoint.parent;
+   rightBreakpoint = arc.parent
+   leftBreakpoint = rightBreakpoint.parent
 
    # create half edge records for each new breakpoint
    f = Geometry.parabola(arcAbove.focus, ly)
-   x = event.coordinates[1]
+   x = event.region.generator[1]
    breakpoint = (x, f(x))
-   he1 = Diagram.HalfEdge(breakpoint, nothing, nothing, nothing, nothing)
-   he2 = Diagram.HalfEdge(breakpoint, nothing, nothing, nothing, nothing)
+   he1 = Diagram.HalfEdge(breakpoint, nothing, nothing, nothing)
+   he2 = Diagram.HalfEdge(breakpoint, nothing, nothing, nothing)
    Diagram.makeTwins(he1, he2)
    push!(V.halfEdges, he1)
    push!(V.halfEdges, he2)
-   leftBreakpoint.halfEdge = he1;
-   rightBreakpoint.halfEdge = he2;
+   leftBreakpoint.halfEdge = he1
+   rightBreakpoint.halfEdge = he2
+   event.region.borderHead = he2 # following the convention that inside half-edges go counter-clockwise
 
    # check for new circle events where 'arc' is the rightmost arc
    c = arc
@@ -103,17 +104,26 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
    # fix the extremes of the joining Voronoi edges
    leftBreakpoint.halfEdge.origin = rightBreakpoint.halfEdge.origin = event.center
 
+   # remembering breakpoint edges, because BeachLine.remove will likely change the breakpoints
+   lBhe = leftBreakpoint.halfEdge
+   rBhe = rightBreakpoint.halfEdge
+
    arc.prev.next = arc.next
    arc.next.prev = arc.prev
    newBreakpoint = BeachLine.remove(T, event.disappearingArc, (event.coordinates[1], event.coordinates[2]))
 
    # create new half edge for the newly formed breakpoint
-   he1 = Diagram.HalfEdge(event.center, nothing, nothing, nothing, nothing)
-   he2 = Diagram.HalfEdge(event.center, nothing, nothing, nothing, nothing)
+   he1 = Diagram.HalfEdge(event.center, nothing, nothing, nothing)
+   he2 = Diagram.HalfEdge(event.center, nothing, nothing, nothing)
    Diagram.makeTwins(he1, he2)
    push!(V.halfEdges, he1)
    push!(V.halfEdges, he2)
-   newBreakpoint.halfEdge = he1; # he2 is already bound to the vertex
+   newBreakpoint.halfEdge = he1 # he2 is left bound to the vertex
+
+   # join the adjacent edges in the region lists
+   Diagram.concat(newBreakpoint.halfEdge, lBhe)
+   Diagram.concat(rBhe.twin, newBreakpoint.halfEdge.twin)
+   Diagram.concat(lBhe.twin, rBhe)
 
    # remove circle events of triples that don't exist anymore
    if arc.prev.disappearsAt != nothing
@@ -156,9 +166,9 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
    end
 end
 
-function compute(points::Array{Tuple{Number, Number}, 1})
-   V, T, Q = init()
-end
+#function compute(points::Array{Tuple{Number, Number}, 1})
+#   V, T, Q = init()
+#end
 
 
 end # module

@@ -15,6 +15,8 @@ ax = nothing
 WIDTH = nothing
 HEIGHT = nothing
 
+colors = ["xkcd:azure", "xkcd:beige", "xkcd:brown", "xkcd:chocolate", "xkcd:coral", "xkcd:crimson", "xkcd:gold", "xkcd:green", "xkcd:grey", "xkcd:indigo", "xkcd:ivory", "xkcd:lavender", "xkcd:lightblue", "xkcd:lightgreen", "xkcd:lime", "xkcd:magenta", "xkcd:maroon", "xkcd:orange", "xkcd:orangered", "xkcd:orchid", "xkcd:pink", "xkcd:plum", "xkcd:salmon", "xkcd:sienna", "xkcd:silver", "xkcd:tan", "xkcd:tomato", "xkcd:violet", "xkcd:wheat", "xkcd:yellowgreen"]
+
 
 function init(w, h)
    global plt, ax
@@ -23,7 +25,7 @@ function init(w, h)
    plt.pygui(true)
    plt.ion()
    plt.clf()
-   #plt.xkcd() # uncomment for generalized wobbliness (for some reason only the axes are wobbly :( )
+   #plt.xkcd() # uncomment for generalized wobbliness
    ax = plt.gca() # get current axes
 
    WIDTH = w
@@ -90,14 +92,14 @@ end
 
 
 function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, points::Array{Tuple{Number, Number}}, ly::Number)
-	Draw.clear()
+	clear()
 
    # draw points
    for p in points
-      Draw.point(p, "xkcd:navy", (ly <= p[2]))
+      point(p, "xkcd:black", (ly <= p[2]))
       if ly < p[2]
          f = Geometry.parabola(p, ly)
-         Draw.plot(f, "xkcd:silver", 0, WIDTH)
+         plot(f, "xkcd:silver", 0, WIDTH)
       end
    end
 
@@ -157,7 +159,7 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
 		f = Geometry.parabola(p, ly)
 
 		if f == nothing # point is over the sweep line
-         Draw.line((p[1], ly), (p[1], start[2]), "xkcd:azure")
+         line((p[1], ly), (p[1], start[2]), "xkcd:azure")
 		else
          if 0 <= start[1]
             st = start[1]
@@ -171,7 +173,7 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
             fn = WIDTH
          end
 
-			Draw.plot(f, "xkcd:azure", st, fn)
+			plot(f, "xkcd:azure", st, fn)
 		end
 
       start = finish
@@ -187,22 +189,50 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
          c = b.next
          O = Q.data[i].center
          r = O[2] - Q.data[i].coordinates[2]
-         Draw.circle(O, "xkcd:orangered", r)
-         Draw.thinLine(O, b.focus, "xkcd:orangered")
-         Draw.point(O, "xkcd:magenta", true)
-         Draw.point((O[1], O[2] - r), "xkcd:orangered", true)
+         circle(O, "xkcd:orangered", r)
+         thinLine(O, b.focus, "xkcd:orangered")
+         point(O, "xkcd:magenta", true)
+         point((O[1], O[2] - r), "xkcd:orangered", true)
       end
 
       i += 1
    end
 
+   # draw diagram edges
    for he in V.halfEdges
-      Draw.line(he.origin, he.twin.origin, "xkcd:lime")
+      line(he.origin, he.twin.origin, "xkcd:black")
    end
 
    # draw sweepline
-	Draw.line((0, ly), (WIDTH, ly), "xkcd:gold")
-	Draw.commit()
+	line((0, ly), (WIDTH, ly), "xkcd:gold")
+	commit()
+end
+
+function voronoiDiagram(V::Diagram.DCEL)
+	clear()
+
+   regions = Diagram.regionBorders(V)
+
+   # draw regions
+   i = 1
+   for region in regions
+      if size(region[1])[1] > 0
+         ax[:fill](region[1], region[2], colors[(i % 30)+ 1])
+      end
+      i += 1
+   end
+
+   # draw diagram edges
+   for he in V.halfEdges
+      line(he.origin, he.twin.origin, "xkcd:black")
+   end
+
+   # draw generators
+   for r in V.regions
+      point(r.generator, "xkcd:black", true)
+   end
+
+	commit()
 end
 
 

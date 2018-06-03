@@ -1,14 +1,22 @@
 module EventQueue # max heap used for the event queue
 
 
+
+using Diagram
+
+
 abstract type Event end
 
 mutable struct SiteEvent <: Event
-   coordinates::Tuple{Number, Number}
+   region::Diagram.Region
 end
 
 function key(ev::SiteEvent)
-   return ev.coordinates[2] # y coordinate
+   return ev.region.generator[2] # y coordinate
+end
+
+function coordinates(ev::SiteEvent)
+   return ev.region.generator
 end
 
 
@@ -26,6 +34,10 @@ end
 
 function key(ev::CircleEvent)
    return ev.coordinates[2] # y coordinate
+end
+
+function coordinates(ev::CircleEvent)
+   return ev.coordinates
 end
 
 
@@ -154,6 +166,7 @@ end
 export Event
 export SiteEvent
 export CircleEvent
+export coordinates
 export Heap
 export push
 export pop

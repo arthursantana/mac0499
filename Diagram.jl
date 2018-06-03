@@ -4,13 +4,14 @@ module Diagram
 abstract type halfEdge end # this hack is currently necessary for definition of circular types in Julia, see https://github.com/JuliaLang/julia/issues/269
 
 mutable struct Region
-   border::Union{halfEdge, Void} # first half edge of the border; we can traverse the border with he = he.next;
+   generator::Tuple{Number, Number}
+   borderHead::Union{halfEdge, Void} # first half edge of the border; we can traverse the border with he = he.next;
 end
 
 mutable struct HalfEdge <: halfEdge
    origin::Tuple{Number, Number}
 
-   incidentRegion::Union{Region, Void}
+   #incidentRegion::Union{Region, Void}
 
    twin::Union{HalfEdge, Void}
    next::Union{HalfEdge, Void}
@@ -36,9 +37,9 @@ end
 function DCEL(points::Array{Tuple{Number, Number}, 1})
 	n = size(points)[1]
 
-   regions = Array{Region}(1, n);
+   regions = Array{Region}(1, n)
    for i in 1:n
-      regions[i] = Region(nothing)
+      regions[i] = Region(points[i], nothing)
    end
 
    halfEdges = HalfEdge[]
@@ -51,20 +52,22 @@ function borderCoordinates(f::Region)
    x = []
    y = []
 
-   if f.border == nothing
+   if f.borderHead == nothing
       return x, y
    end
 
-   he = f.border
+   he = f.borderHead
 
    append!(x, he.origin[1])
    append!(y, he.origin[2])
    he = he.next
 
-   while he != f.border
+   i = 0
+   while he != nothing && he != f.borderHead
       append!(x, he.origin[1])
       append!(y, he.origin[2])
       he = he.next
+      i += 1
    end
 
    return x, y
