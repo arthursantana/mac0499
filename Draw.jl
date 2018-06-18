@@ -159,7 +159,10 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
 		f = Geometry.parabola(p, ly)
 
 		if f == nothing # point is over the sweep line
-         line((p[1], ly), (p[1], start[2]), "xkcd:azure")
+         if start == nothing # special case where there the first couple of points are on the same y coordinate
+         else
+            Draw.line((p[1], ly), (p[1], start[2]), "xkcd:azure")
+         end
 		else
          if 0 <= start[1]
             st = start[1]
@@ -200,7 +203,9 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
 
    # draw diagram edges
    for he in V.halfEdges
-      line(he.origin, he.twin.origin, "xkcd:black")
+      if he.origin != nothing && he.twin.origin != nothing
+         Draw.line(he.origin, he.twin.origin, "xkcd:black")
+      end
    end
 
    # draw sweepline

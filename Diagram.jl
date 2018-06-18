@@ -9,7 +9,7 @@ mutable struct Region
 end
 
 mutable struct HalfEdge <: halfEdge
-   origin::Tuple{Number, Number}
+   origin::Union{Tuple{Number, Number}, Void}
 
    #incidentRegion::Union{Region, Void}
 

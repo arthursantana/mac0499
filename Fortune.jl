@@ -42,7 +42,13 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
    # create half edge records for each new breakpoint
    f = Geometry.parabola(arcAbove.focus, ly)
    x = event.region.generator[1]
-   breakpoint = (x, f(x))
+
+   if f != nothing
+      breakpoint = (x, f(x))
+   else
+      breakpoint = nothing
+   end
+
    he1 = Diagram.HalfEdge(breakpoint, nothing, nothing, nothing)
    he2 = Diagram.HalfEdge(breakpoint, nothing, nothing, nothing)
    Diagram.makeTwins(he1, he2)

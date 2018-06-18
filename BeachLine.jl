@@ -28,17 +28,6 @@ mutable struct Breakpoint
    halfEdge::Union{Diagram.HalfEdge, Void}
 end
 
-function findBreakpoint(node::Breakpoint, ly)
-   bp = Geometry.parabolaIntersection(node.leftFocus, node.rightFocus, ly)
-
-   if bp == nothing
-      println("ZERO INTERSECTIONS! SHOULDN'T HAPPEN")
-   end
-
-   return bp
-end
-
-
 mutable struct BST
    root::Union{Arc, Breakpoint, Void}
 end
@@ -62,14 +51,18 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
       while !isa(node, Arc)
          parent = node
 
-         bp = findBreakpoint(node, ly)
+         bp = Geometry.parabolaIntersection(node.leftFocus, node.rightFocus, ly)
 
-         if arc.focus[1] <= bp[1]
-            node = node.leftChild
-            side = LEFT
+         if bp == nothing
+            println("SPECIAL CASE: FIRST COUPLE OF POINTS ARE ON THE SAME Y. NOT IMPLEMENTED YET")
          else
-            node = node.rightChild
-            side = RIGHT
+            if arc.focus[1] <= bp[1]
+               node = node.leftChild
+               side = LEFT
+            else
+               node = node.rightChild
+               side = RIGHT
+            end
          end
       end
 
@@ -186,8 +179,9 @@ function beachLine(T::BST, ly)
    end
 
    function beachLine(node::Breakpoint)
-      bp = findBreakpoint(node, ly)
+      bp = Geometry.parabolaIntersection(node.leftFocus, node.rightFocus, ly)
       node.halfEdge.origin = bp
+
       return vcat(beachLine(node.leftChild), [bp], beachLine(node.rightChild))
    end
 

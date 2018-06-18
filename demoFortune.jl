@@ -20,6 +20,25 @@ for i in 1:1000
    points = convert(Array{Tuple{Number, Number}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
    #println(points)
 
+   # test for repeated points
+   repeat = false
+   for i in 1:length(points)
+      for j in 1:length(points)
+         if j == i
+            continue
+         end
+
+         if points[i][1] == points[j][1] && points[i][2] == points[j][2]
+            repeat = true
+         end
+      end
+   end
+   if repeat
+      println("REPEATED POINTS!")
+      continue
+   else
+   end
+
    V, T, Q = Fortune.init(points)
 
    Draw.init(WIDTH, HEIGHT)
@@ -30,14 +49,14 @@ for i in 1:1000
    while (event = EventQueue.pop(Q)) != nothing
       Fortune.handleEvent(V, T, Q, event) # multiple dispatch decides if it's a site event or circle event
 
-      #ly = EventQueue.coordinates(event)[2] # sweep line height
-      #Draw.fortuneIteration(V, T, Q, points, ly)
-      #if command != "a"
-      #   println("Press Return for a step or enter \"a\" to animate until the end.")
-      #   command = readline(STDIN)
-      #else
-      #   sleep(0.001)
-      #end
+      ly = EventQueue.coordinates(event)[2] # sweep line height
+      Draw.fortuneIteration(V, T, Q, points, ly)
+      if command != "a"
+         println("Press Return for a step or enter \"a\" to animate until the end.")
+         command = readline(STDIN)
+      else
+         sleep(0.001)
+      end
    end
 
    #println("Drawing...")

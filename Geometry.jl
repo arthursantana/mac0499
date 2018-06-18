@@ -40,7 +40,7 @@ function parabolaIntersection(p::Tuple{Number, Number}, q::Tuple{Number, Number}
       return (x, f(x))
    end
 
-   if delta < 0 # no intersection, should never happen between arcs on the beach line
+   if delta < 0 # no intersection, should only happen when the first couple of points have the same y coordinate
       return nothing
    else
       x1 = (-b - sqrt(delta))/2a
