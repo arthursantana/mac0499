@@ -172,9 +172,15 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
    end
 end
 
-#function compute(points::Array{Tuple{Number, Number}, 1})
-#   V, T, Q = init()
-#end
+function compute(points::Array{Tuple{Number, Number}, 1})
+   V, T, Q = init(points)
+
+   while (event = EventQueue.pop(Q)) != nothing
+      Fortune.handleEvent(V, T, Q, event) # multiple dispatch decides if it's a site event or circle event
+   end
+
+   return V
+end
 
 
 end # module
