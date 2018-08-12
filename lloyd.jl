@@ -7,7 +7,7 @@ import Draw
 
 WIDTH = 100.0
 HEIGHT = 100.0
-n = 50
+n = 10
 
 function randf(start, finish, n)
    v = rand(n)
@@ -17,7 +17,8 @@ end
 for i in 1:1000
    println("Random seed: ", i)
    srand(i)
-   points = convert(Array{Tuple{Number, Number}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
+   #points = convert(Array{Tuple{Number, Number}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
+   points = convert(Array{Tuple{Number, Number}}, [(10,90), (20,80), (30,70)])
    #println(points)
 
    # test for repeated points

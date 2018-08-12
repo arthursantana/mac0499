@@ -14,6 +14,7 @@ plt = PyPlot
 ax = nothing
 WIDTH = nothing
 HEIGHT = nothing
+FRAME = 20
 
 colors = ["xkcd:azure", "xkcd:beige", "xkcd:brown", "xkcd:chocolate", "xkcd:coral", "xkcd:crimson", "xkcd:gold", "xkcd:green", "xkcd:grey", "xkcd:indigo", "xkcd:ivory", "xkcd:lavender", "xkcd:lightblue", "xkcd:lightgreen", "xkcd:lime", "xkcd:magenta", "xkcd:maroon", "xkcd:orange", "xkcd:orangered", "xkcd:orchid", "xkcd:pink", "xkcd:plum", "xkcd:salmon", "xkcd:sienna", "xkcd:silver", "xkcd:tan", "xkcd:tomato", "xkcd:violet", "xkcd:wheat", "xkcd:yellowgreen"]
 
@@ -34,13 +35,13 @@ end
 
 function clear()
    global plt, ax
-   global WIDTH, HEIGHT
+   global WIDTH, HEIGHT, FRAME
 
    plt.cla()
    plt.title("Computing Voronoi Diagram using Fortune's Algorithm")
    ax[:set_aspect]("equal")
-   ax[:set_xlim]([0, WIDTH])
-   ax[:set_ylim]([0, HEIGHT])
+   ax[:set_xlim]([0 - FRAME, WIDTH + FRAME])
+   ax[:set_ylim]([0 - FRAME, HEIGHT + FRAME])
    ax[:grid](false)
    ax[:get_xaxis]()[:set_visible](false)
    ax[:get_yaxis]()[:set_visible](false)
@@ -236,6 +237,11 @@ function voronoiDiagram(V::Diagram.DCEL)
    for r in V.regions
       point(r.generator, "xkcd:black", true)
    end
+
+   line((0, 0), (0, HEIGHT), "cyan")
+   line((0, 0), (WIDTH, 0), "cyan")
+   line((WIDTH, 0), (WIDTH, HEIGHT), "cyan")
+   line((0, HEIGHT), (WIDTH, HEIGHT), "cyan")
 
 	commit()
 end

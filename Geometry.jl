@@ -95,6 +95,22 @@ function arcWillConverge(a::Tuple{Number, Number}, b::Tuple{Number, Number}, c::
    return (det < 0)
 end
 
+function addVector(a::Tuple{Number, Number}, b::Tuple{Number, Number})
+   return (a[1] + b[1], a[2] + b[2])
+end
+
+function subVector(a::Tuple{Number, Number}, b::Tuple{Number, Number})
+   return (a[1] - b[1], a[2] - b[2])
+end
+
+function rotateVectorCCW(a::Tuple{Number, Number})
+   return (-a[2], a[1])
+end
+
+function multVector(c::Number, a::Tuple{Number, Number})
+   return (c*a[1], c*a[2])
+end
+
 #function someParabolaIsWrong() # for debugging
 #   NLINES = 1000
 #   NPOINTSFOREACHLINE = 1000

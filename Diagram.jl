@@ -11,7 +11,7 @@ end
 mutable struct HalfEdge <: halfEdge
    origin::Union{Tuple{Number, Number}, Void}
 
-   #incidentRegion::Union{Region, Void}
+   isFixed::Bool
 
    twin::Union{HalfEdge, Void}
    next::Union{HalfEdge, Void}
