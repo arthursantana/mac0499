@@ -58,14 +58,18 @@ function borderCoordinates(f::Region)
 
    he = f.borderHead
 
-   append!(x, he.origin[1])
-   append!(y, he.origin[2])
+   if he.origin != nothing
+      append!(x, he.origin[1])
+      append!(y, he.origin[2])
+   end
    he = he.next
 
    i = 0
    while he != nothing && he != f.borderHead
-      append!(x, he.origin[1])
-      append!(y, he.origin[2])
+      if he.origin != nothing
+         append!(x, he.origin[1])
+         append!(y, he.origin[2])
+      end
       he = he.next
       i += 1
    end
@@ -73,16 +77,15 @@ function borderCoordinates(f::Region)
    return x, y
 end
 
-function regionBorders(l::DCEL)
+function regionBorders(V::DCEL)
    borders = []
 
-   for region in l.regions
+   for region in V.regions
       append!(borders, [borderCoordinates(region)])
    end
 
    return borders
 end
-
 
 export DCEL
 export HalfEdge
@@ -90,6 +93,8 @@ export Region
 export regions
 export makeTwins
 export concat
+export Rectangle
+export intersect
 
 
 end # module

@@ -1,6 +1,5 @@
 module Geometry
 
-
 # returns a function that describes a parabola defined by a focus p and a directrix of vertical component ly
 function parabola(p::Tuple{Number, Number}, ly::Number)
    if p[2] == ly

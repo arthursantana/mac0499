@@ -86,7 +86,7 @@ function largestChild(h::Heap, i::Int)
    end
 end
 
-function push(h::Heap, ev::Event)
+function push!(h::Heap, ev::Event)
    n = size(h.data)[1]
 
    if h.pos >= n # full
@@ -168,7 +168,7 @@ export SiteEvent
 export CircleEvent
 export coordinates
 export Heap
-export push
+export push!
 export pop
 export remove
 

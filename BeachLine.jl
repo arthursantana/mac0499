@@ -11,7 +11,7 @@ using Diagram
 
 
 mutable struct Arc
-   focus::Tuple{Number, Number}
+   region::Diagram.Region
    disappearsAt::Union{EventQueue.CircleEvent, Void}
    parent#::Union{Breakpoint, Void}
    prev::Union{Arc, Void}
@@ -37,13 +37,13 @@ function BST()
 end
 
 
-function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
-   arc = Arc(coordinates, nothing, nothing, nothing, nothing)
+function insert(T::BST, region::Diagram.Region, ly::Number)
+   arc = Arc(region, nothing, nothing, nothing, nothing)
 
    if T.root == nothing
       T.root = arc
       node = nothing
-   else # look for the parabola immediately over arc.focus
+   else # look for the parabola immediately over arc.region.generator
       parent = nothing
       node = T.root
       side = LEFT # indicate which pointer from parent points to node
@@ -56,7 +56,7 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
          if bp == nothing
             println("SPECIAL CASE: FIRST COUPLE OF POINTS ARE ON THE SAME Y. NOT IMPLEMENTED YET")
          else
-            if arc.focus[1] <= bp[1]
+            if arc.region.generator[1] <= bp[1]
                node = node.leftChild
                side = LEFT
             else
@@ -67,7 +67,7 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
       end
 
       # arrived at a leaf 'node'; switch it for subtree with tree leaves, 'arc' being the middle one, 'node' being on both the others
-      newNode = Arc(node.focus, nothing, nothing, arc, node.next)
+      newNode = Arc(node.region, nothing, nothing, arc, node.next)
       arc.prev = node
       arc.next = newNode
       if node.next != nothing
@@ -75,8 +75,8 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
       end
       node.next = arc
 
-      childTree = Breakpoint(arc.focus, node.focus, nothing, arc, newNode, nothing)
-      newSubTree = Breakpoint(node.focus, arc.focus, parent, node, childTree, nothing)
+      childTree = Breakpoint(arc.region.generator, node.region.generator, nothing, arc, newNode, nothing)
+      newSubTree = Breakpoint(node.region.generator, arc.region.generator, parent, node, childTree, nothing)
       
       node.parent = newSubTree
       childTree.parent = newSubTree
@@ -99,7 +99,7 @@ function insert(T::BST, coordinates::Tuple{Number, Number}, ly::Number)
    return arc, node
 end
 
-function remove(T::BST, arc::Arc, coordinates::Tuple{Number, Number})
+function remove(T::BST, arc::Arc)
    if arc == T.root
       T.root = nothing
 
@@ -142,16 +142,16 @@ function remove(T::BST, arc::Arc, coordinates::Tuple{Number, Number})
 
       if parent.leftChild == subTree
          if rightExtreme != nothing
-            if parent.leftFocus != rightExtreme.focus
-               parent.leftFocus = rightExtreme.focus
+            if parent.leftFocus != rightExtreme.region.generator
+               parent.leftFocus = rightExtreme.region.generator
                newBreakpoint = parent
             end
             rightExtreme = nothing # nothing means no change
          end
       else
          if leftExtreme != nothing
-            if parent.rightFocus != leftExtreme.focus
-               parent.rightFocus = leftExtreme.focus
+            if parent.rightFocus != leftExtreme.region.generator
+               parent.rightFocus = leftExtreme.region.generator
                newBreakpoint = parent
             end
             leftExtreme = nothing # nothing means no change
@@ -175,7 +175,7 @@ end
 # production version should not use this (see Fortune.compute())
 function beachLine(T::BST, ly)
    function beachLine(node::Arc)
-      return [node.focus]
+      return [node.region.generator]
    end
 
    function beachLine(node::Breakpoint)
@@ -202,9 +202,9 @@ function printNode(node::Arc, depth) # for debugging
       print(".")
    end
    if node.parent == nothing
-      print(node.focus, "; orphan")
+      print(node.region.generator, "; orphan")
    else
-      print(node.focus, "; parent = ", node.parent.leftFocus, ",", node.parent.rightFocus)
+      print(node.region.generator, "; parent = ", node.parent.leftFocus, ",", node.parent.rightFocus)
    end
    println()
 end

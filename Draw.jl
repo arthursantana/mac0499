@@ -14,7 +14,7 @@ plt = PyPlot
 ax = nothing
 WIDTH = nothing
 HEIGHT = nothing
-FRAME = 20
+FRAME = 0
 
 colors = ["xkcd:azure", "xkcd:beige", "xkcd:brown", "xkcd:chocolate", "xkcd:coral", "xkcd:crimson", "xkcd:gold", "xkcd:green", "xkcd:grey", "xkcd:indigo", "xkcd:ivory", "xkcd:lavender", "xkcd:lightblue", "xkcd:lightgreen", "xkcd:lime", "xkcd:magenta", "xkcd:maroon", "xkcd:orange", "xkcd:orangered", "xkcd:orchid", "xkcd:pink", "xkcd:plum", "xkcd:salmon", "xkcd:sienna", "xkcd:silver", "xkcd:tan", "xkcd:tomato", "xkcd:violet", "xkcd:wheat", "xkcd:yellowgreen"]
 
@@ -33,12 +33,12 @@ function init(w, h)
    HEIGHT = h
 end
 
-function clear()
+function clear(title::String)
    global plt, ax
    global WIDTH, HEIGHT, FRAME
 
    plt.cla()
-   plt.title("Computing Voronoi Diagram using Fortune's Algorithm")
+   plt.title(title)
    ax[:set_aspect]("equal")
    ax[:set_xlim]([0 - FRAME, WIDTH + FRAME])
    ax[:set_ylim]([0 - FRAME, HEIGHT + FRAME])
@@ -93,7 +93,7 @@ end
 
 
 function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, points::Array{Tuple{Number, Number}}, ly::Number)
-	clear()
+	clear("Computing Voronoi Diagram using Fortune's Algorithm")
 
    # draw points
    for p in points
@@ -194,7 +194,7 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
          O = Q.data[i].center
          r = O[2] - Q.data[i].coordinates[2]
          circle(O, "xkcd:orangered", r)
-         thinLine(O, b.focus, "xkcd:orangered")
+         thinLine(O, b.region.generator, "xkcd:orangered")
          point(O, "xkcd:magenta", true)
          point((O[1], O[2] - r), "xkcd:orangered", true)
       end
@@ -215,7 +215,7 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
 end
 
 function voronoiDiagram(V::Diagram.DCEL)
-	clear()
+	clear("Computing Centroidal Voronoi Tesselations using Lloyd's Algorithm")
 
    regions = Diagram.regionBorders(V)
 
@@ -230,7 +230,13 @@ function voronoiDiagram(V::Diagram.DCEL)
 
    # draw diagram edges
    for he in V.halfEdges
-      line(he.origin, he.twin.origin, "xkcd:black")
+      if he.origin != nothing
+         if he.twin != nothing
+            Draw.line(he.origin, he.twin.origin, "xkcd:black")
+         elseif he.next != nothing
+            Draw.line(he.origin, he.next.origin, "xkcd:black")
+         end
+      end
    end
 
    # draw generators
@@ -238,10 +244,10 @@ function voronoiDiagram(V::Diagram.DCEL)
       point(r.generator, "xkcd:black", true)
    end
 
-   line((0, 0), (0, HEIGHT), "cyan")
-   line((0, 0), (WIDTH, 0), "cyan")
-   line((WIDTH, 0), (WIDTH, HEIGHT), "cyan")
-   line((0, HEIGHT), (WIDTH, HEIGHT), "cyan")
+   #line((0, 0), (0, HEIGHT), "cyan")
+   #line((0, 0), (WIDTH, 0), "cyan")
+   #line((WIDTH, 0), (WIDTH, HEIGHT), "cyan")
+   #line((0, HEIGHT), (WIDTH, HEIGHT), "cyan")
 
 	commit()
 end
