@@ -1,10 +1,10 @@
 module Lloyd
 
 
-using Diagram
+using ..Diagram
 
 
-function centroid(region::Diagram.Region)
+function centroidAndArea(region::Diagram.Region)
    A = Cx = Cy = 0
 
    he = region.borderHead
@@ -24,16 +24,19 @@ function centroid(region::Diagram.Region)
    Cx /= 6*A
    Cy /= 6*A
 
-   return (Cx, Cy)
+   return ((Cx, Cy), A)
 end
 
-function centroids(V::Diagram.DCEL)
-   array = Array{Tuple{Number, Number}, 1}([])
+function centroidsAndAreas(V::Diagram.DCEL)
+   centroids = Array{Tuple{Real, Real}, 1}([])
+   areas = Array{Real, 1}([])
    for region in V.regions
-      push!(array, centroid(region))
+      res = centroidAndArea(region)
+      push!(centroids, (res[1]))
+      push!(areas, (res[2]))
    end
 
-   return array
+   return centroids, areas
 end
 
 

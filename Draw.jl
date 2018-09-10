@@ -1,13 +1,13 @@
 module Draw
 
-import PyPlot
+using PyPlot
 using PyCall
 @pyimport matplotlib.patches as patch
 
-using Geometry
-using Diagram
-using BeachLine
-using EventQueue
+using ..Geometry
+using ..Diagram
+using ..BeachLine
+using ..EventQueue
 
 
 plt = PyPlot
@@ -16,7 +16,7 @@ WIDTH = nothing
 HEIGHT = nothing
 FRAME = 0
 
-colors = ["xkcd:azure", "xkcd:beige", "xkcd:brown", "xkcd:chocolate", "xkcd:coral", "xkcd:crimson", "xkcd:gold", "xkcd:green", "xkcd:grey", "xkcd:indigo", "xkcd:ivory", "xkcd:lavender", "xkcd:lightblue", "xkcd:lightgreen", "xkcd:lime", "xkcd:magenta", "xkcd:maroon", "xkcd:orange", "xkcd:orangered", "xkcd:orchid", "xkcd:pink", "xkcd:plum", "xkcd:salmon", "xkcd:sienna", "xkcd:silver", "xkcd:tan", "xkcd:tomato", "xkcd:violet", "xkcd:wheat", "xkcd:yellowgreen"]
+colors = ["xkcd:grey", "xkcd:crimson", "xkcd:gold", "xkcd:green", "xkcd:azure", "xkcd:beige", "xkcd:silver", "xkcd:lavender", "xkcd:lightgreen", "xkcd:magenta", "xkcd:ivory", "xkcd:maroon", "xkcd:orange", "xkcd:orangered", "xkcd:orchid", "xkcd:pink", "xkcd:plum", "xkcd:gold", "xkcd:salmon", "xkcd:sienna", "xkcd:lime", "xkcd:tan", "xkcd:tomato", "xkcd:violet", "xkcd:wheat", "xkcd:indigo", "xkcd:yellowgreen", "xkcd:chocolate", "xkcd:coral", "xkcd:brown"]
 
 
 function init(w, h)
@@ -54,27 +54,27 @@ function commit()
 end
 
 
-function circle_Internal(p::Tuple{Number, Number}, color, fill, r, l)
+function circle_Internal(p::Tuple{Real, Real}, color, fill, r, l)
    global ax
 
    ax[:add_artist](patch.Circle((p[1], p[2]), color=color, radius=r, fill=fill, zorder=3, linewidth=l))
 end
 
-function point(p::Tuple{Number, Number}, color, fill)
+function point(p::Tuple{Real, Real}, color, fill)
    circle_Internal(p, color, fill, 0.5, 1)
 end
 
-function circle(p::Tuple{Number, Number}, color, r)
+function circle(p::Tuple{Real, Real}, color, r)
    circle_Internal(p, color, false, r, 1)
 end
 
-function line(p1::Tuple{Number, Number}, p2::Tuple{Number, Number}, color)
+function line(p1::Tuple{Real, Real}, p2::Tuple{Real, Real}, color)
    global plt
 
    plt.plot([p1[1], p2[1]], [p1[2], p2[2]], color=color, linestyle="-", linewidth=3, zorder=1)
 end
 
-function thinLine(p1::Tuple{Number, Number}, p2::Tuple{Number, Number}, color)
+function thinLine(p1::Tuple{Real, Real}, p2::Tuple{Real, Real}, color)
    global plt
 
    plt.plot([p1[1], p2[1]], [p1[2], p2[2]], color=color, linestyle="-", linewidth=1, zorder=1)
@@ -83,7 +83,7 @@ end
 function plot(f, color, start, finish)
    global plt
 
-   x = linspace(start, finish, 1000)
+   x = range(start, stop=finish, length=1000)
    y = map(f, x)
 
    plt.plot(x, y, color=color, linewidth=3, zorder=2)
@@ -92,7 +92,7 @@ end
 
 
 
-function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, points::Array{Tuple{Number, Number}}, ly::Number)
+function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, points::Array{Tuple{Real, Real}}, ly::Real)
 	clear("Computing Voronoi Diagram using Fortune's Algorithm")
 
    # draw points

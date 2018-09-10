@@ -1,20 +1,20 @@
 module Intersect
 
 
-using Geometry
-using Diagram
+using ..Geometry
+using ..Diagram
 
 
 mutable struct Rectangle
-   w::Number
-   h::Number
+   w::Real
+   h::Real
 end
 
-function inbounds(box::Rectangle, p::Tuple{Number, Number})
+function inbounds(box::Rectangle, p::Tuple{Real, Real})
    return (0 <= p[1] <= box.w) && (0 <= p[2] <= box.h)
 end
 
-function intersectLine(box::Rectangle, a::Tuple{Number, Number}, b::Tuple{Number, Number})
+function intersectLine(box::Rectangle, a::Tuple{Real, Real}, b::Tuple{Real, Real})
    dir = Geometry.subVector(b, a)
    
    if dir[1] == 0
@@ -44,7 +44,7 @@ function intersectLine(box::Rectangle, a::Tuple{Number, Number}, b::Tuple{Number
       r = (box.w, a[2] - (a[1]-box.w)*(dir[2]/dir[1]))
       u = (a[1] - (a[2]-box.h)*(dir[1]/dir[2]), box.h)
 
-      p = Array{Union{Tuple{Number, Number}, Void}, 1}([nothing, nothing])
+      p = Array{Union{Tuple{Real, Real}, Nothing}, 1}([nothing, nothing])
       i = 1
       for q in [l, d, r, u]
          if inbounds(box, q)
@@ -122,7 +122,7 @@ function intersectEdge(box::Rectangle, he::Diagram.HalfEdge)
    return ret1, ret2
 end
 
-function nextCorner(box::Rectangle, p::Tuple{Number, Number})
+function nextCorner(box::Rectangle, p::Tuple{Real, Real})
    if p[1] == 0 && p[2] > 0
       return (0, 0)
    elseif p[2] == 0 && p[1] < box.w

@@ -1,7 +1,7 @@
 module Geometry
 
 # returns a function that describes a parabola defined by a focus p and a directrix of vertical component ly
-function parabola(p::Tuple{Number, Number}, ly::Number)
+function parabola(p::Tuple{Real, Real}, ly::Real)
    if p[2] == ly
       return nothing
    else
@@ -11,7 +11,7 @@ function parabola(p::Tuple{Number, Number}, ly::Number)
    end
 end
 
-function parabolaIntersection(p::Tuple{Number, Number}, q::Tuple{Number, Number}, ly::Number)
+function parabolaIntersection(p::Tuple{Real, Real}, q::Tuple{Real, Real}, ly::Real)
    f = parabola(p, ly)
    g = parabola(q, ly)
 
@@ -61,7 +61,7 @@ function parabolaIntersection(p::Tuple{Number, Number}, q::Tuple{Number, Number}
    end
 end
 
-function circumcircle(A::Tuple{Number, Number}, B::Tuple{Number, Number}, C::Tuple{Number, Number})
+function circumcircle(A::Tuple{Real, Real}, B::Tuple{Real, Real}, C::Tuple{Real, Real})
    # P is the midpoint between A and B
    P = ((A[1] + B[1])/2, (A[2] + B[2])/2)
 
@@ -83,30 +83,34 @@ function circumcircle(A::Tuple{Number, Number}, B::Tuple{Number, Number}, C::Tup
    return O, r
 end
 
-function distance(A::Tuple{Number, Number}, B::Tuple{Number, Number})
-   return sqrt((A[1]-B[1])^2 + (A[2]-B[2])^2)
+function distance(A::Tuple{Real, Real}, B::Tuple{Real, Real})
+   return sqrt(distanceSquared(A, B))
+end
+
+function distanceSquared(A::Tuple{Real, Real}, B::Tuple{Real, Real})
+   return (A[1]-B[1])^2 + (A[2]-B[2])^2
 end
 
 # tests if middle arc of focus b will converge between foci a and c when the sweep line reaches ly
-function arcWillConverge(a::Tuple{Number, Number}, b::Tuple{Number, Number}, c::Tuple{Number, Number})
+function arcWillConverge(a::Tuple{Real, Real}, b::Tuple{Real, Real}, c::Tuple{Real, Real})
    det = (b[1] - a[1])*(c[2] - a[2]) - (c[1] - a[1])*(b[2] - a[2])
 
    return (det < 0)
 end
 
-function addVector(a::Tuple{Number, Number}, b::Tuple{Number, Number})
+function addVector(a::Tuple{Real, Real}, b::Tuple{Real, Real})
    return (a[1] + b[1], a[2] + b[2])
 end
 
-function subVector(a::Tuple{Number, Number}, b::Tuple{Number, Number})
+function subVector(a::Tuple{Real, Real}, b::Tuple{Real, Real})
    return (a[1] - b[1], a[2] - b[2])
 end
 
-function rotateVectorCCW(a::Tuple{Number, Number})
+function rotateVectorCCW(a::Tuple{Real, Real})
    return (-a[2], a[1])
 end
 
-function multVector(c::Number, a::Tuple{Number, Number})
+function multVector(c::Real, a::Tuple{Real, Real})
    return (c*a[1], c*a[2])
 end
 
@@ -114,7 +118,7 @@ end
 #   NLINES = 1000
 #   NPOINTSFOREACHLINE = 1000
 #
-#   function parabolaIsWrong(p::Tuple{Number, Number}, ly::Number)
+#   function parabolaIsWrong(p::Tuple{Real, Real}, ly::Real)
 #      MAX_ERROR = 10^(-5.0)
 #
 #      X = linspace(0, 100, 1000)

@@ -1,9 +1,9 @@
 module BeachLine
 
 
-using Geometry
-using EventQueue
-using Diagram
+using ..Geometry
+using ..EventQueue
+using ..Diagram
 
 
 
@@ -12,24 +12,24 @@ using Diagram
 
 mutable struct Arc
    region::Diagram.Region
-   disappearsAt::Union{EventQueue.CircleEvent, Void}
-   parent#::Union{Breakpoint, Void}
-   prev::Union{Arc, Void}
-   next::Union{Arc, Void}
+   disappearsAt::Union{EventQueue.CircleEvent, Nothing}
+   parent#::Union{Breakpoint, Nothing}
+   prev::Union{Arc, Nothing}
+   next::Union{Arc, Nothing}
 end
 
 
 mutable struct Breakpoint
-   leftFocus::Tuple{Number, Number}
-   rightFocus::Tuple{Number, Number}
-   parent::Union{Breakpoint, Void}
+   leftFocus::Tuple{Real, Real}
+   rightFocus::Tuple{Real, Real}
+   parent::Union{Breakpoint, Nothing}
    leftChild::Union{Arc, Breakpoint}
    rightChild::Union{Arc, Breakpoint}
-   halfEdge::Union{Diagram.HalfEdge, Void}
+   halfEdge::Union{Diagram.HalfEdge, Nothing}
 end
 
 mutable struct BST
-   root::Union{Arc, Breakpoint, Void}
+   root::Union{Arc, Breakpoint, Nothing}
 end
 
 function BST()
@@ -37,7 +37,7 @@ function BST()
 end
 
 
-function insert(T::BST, region::Diagram.Region, ly::Number)
+function insert(T::BST, region::Diagram.Region, ly::Real)
    arc = Arc(region, nothing, nothing, nothing, nothing)
 
    if T.root == nothing
@@ -193,7 +193,7 @@ function beachLine(T::BST, ly)
 end
 
 
-function printNode(node::Void, depth) # for debugging
+function printNode(node::Nothing, depth) # for debugging
    return
 end
 

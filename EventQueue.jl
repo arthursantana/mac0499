@@ -2,7 +2,7 @@ module EventQueue # max heap used for the event queue
 
 
 
-using Diagram
+using ..Diagram
 
 
 abstract type Event end
@@ -21,14 +21,14 @@ end
 
 
 mutable struct CircleEvent <: Event
-   coordinates::Tuple{Number, Number}
-   center::Tuple{Number, Number}
-   disappearingArc#::Union{BeachLine.Arc, Void} --- I'm not type checking because I'm getting a weird Julia-specific error I don't wanna solve now
+   coordinates::Tuple{Real, Real}
+   center::Tuple{Real, Real}
+   disappearingArc#::Union{BeachLine.Arc, Nothing} --- I'm not type checking because I'm getting a weird Julia-specific error I don't wanna solve now
                                                     # Cannot `convert` an object of type BeachLine.Arc to an object of type BeachLine.Arc
    removed::Bool
 end
 
-function CircleEvent(center::Tuple{Number, Number}, r, arc)
+function CircleEvent(center::Tuple{Real, Real}, r, arc)
    return CircleEvent((center[1], center[2] - r), center, arc, false)
 end
 
@@ -51,7 +51,7 @@ function Heap(n::Int)
       n = 1
    end
 
-   return Heap(Array{Event}(n), 1)
+   return Heap(Array{Event}(undef, n), 1)
 end
 
 function Heap()

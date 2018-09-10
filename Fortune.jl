@@ -1,13 +1,13 @@
 module Fortune
 
 
-using Geometry
-using EventQueue
-using BeachLine
-using Diagram
+using ..Geometry
+using ..EventQueue
+using ..BeachLine
+using ..Diagram
 
 
-function init(points::Array{Tuple{Number, Number}, 1})
+function init(points::Array{Tuple{Real, Real}, 1})
 	n = size(points)[1]
 
    V = Diagram.DCEL(points)
@@ -183,8 +183,8 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
    end
 end
 
-#function finishDiagram(V::Diagram.DCEL, WIDTH::Number, HEIGHT::Number)
-#   function inbounds(p::Tuple{Number, Number})
+#function finishDiagram(V::Diagram.DCEL, WIDTH::Real, HEIGHT::Real)
+#   function inbounds(p::Tuple{Real, Real})
 #      return (0 <= p[1] <= WIDTH) && (0 <= p[2] <= HEIGHT)
 #   end
 #
@@ -255,7 +255,7 @@ end
 #   return V
 #end
 
-function compute(points::Array{Tuple{Number, Number}, 1})
+function compute(points::Array{Tuple{Real, Real}, 1})
    V, T, Q = init(points)
 
    while (event = EventQueue.pop(Q)) != nothing
