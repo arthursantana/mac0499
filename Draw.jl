@@ -16,7 +16,8 @@ WIDTH = nothing
 HEIGHT = nothing
 FRAME = 0
 
-colors = ["xkcd:grey", "xkcd:crimson", "xkcd:gold", "xkcd:green", "xkcd:azure", "xkcd:beige", "xkcd:silver", "xkcd:lavender", "xkcd:lightgreen", "xkcd:magenta", "xkcd:ivory", "xkcd:maroon", "xkcd:orange", "xkcd:orangered", "xkcd:orchid", "xkcd:pink", "xkcd:plum", "xkcd:gold", "xkcd:salmon", "xkcd:sienna", "xkcd:lime", "xkcd:tan", "xkcd:tomato", "xkcd:violet", "xkcd:wheat", "xkcd:indigo", "xkcd:yellowgreen", "xkcd:chocolate", "xkcd:coral", "xkcd:brown"]
+colors = ["white"]
+#colors = ["xkcd:grey", "xkcd:crimson", "xkcd:gold", "xkcd:green", "xkcd:azure", "xkcd:beige", "xkcd:silver", "xkcd:lavender", "xkcd:lightgreen", "xkcd:magenta", "xkcd:ivory", "xkcd:maroon", "xkcd:orange", "xkcd:orangered", "xkcd:orchid", "xkcd:pink", "xkcd:plum", "xkcd:gold", "xkcd:salmon", "xkcd:sienna", "xkcd:lime", "xkcd:tan", "xkcd:tomato", "xkcd:violet", "xkcd:wheat", "xkcd:indigo", "xkcd:yellowgreen", "xkcd:chocolate", "xkcd:coral", "xkcd:brown"]
 
 
 function init(w, h)
@@ -93,7 +94,8 @@ end
 
 
 function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, points::Array{Tuple{Real, Real}}, ly::Real)
-	clear("Computing Voronoi Diagram using Fortune's Algorithm")
+	#clear("Computing Voronoi Diagram using Fortune's Algorithm")
+	clear("")
 
    # draw points
    for p in points
@@ -215,7 +217,8 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
 end
 
 function voronoiDiagram(V::Diagram.DCEL)
-	clear("Computing Centroidal Voronoi Tesselations using Lloyd's Algorithm")
+	#clear("Computing Centroidal Voronoi Tesselations using Lloyd's Algorithm")
+	clear("")
 
    regions = Diagram.regionBorders(V)
 
@@ -223,7 +226,7 @@ function voronoiDiagram(V::Diagram.DCEL)
    i = 1
    for region in regions
       if size(region[1])[1] > 0
-         ax[:fill](region[1], region[2], colors[(i % 30)+ 1])
+         ax[:fill](region[1], region[2], colors[(i % size(colors)[1])+ 1])
       end
       i += 1
    end

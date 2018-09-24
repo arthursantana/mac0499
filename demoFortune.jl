@@ -17,14 +17,11 @@ end
 function demoFortune()
    WIDTH = 100.0
    HEIGHT = 100.0
-   n = 100
+   n = 10
    for i in 1:1000
       println("Random seed: ", i)
       Random.seed!(i)
       points = convert(Array{Tuple{Real, Real}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
-      #points = convert(Array{Tuple{Real, Real}}, [(10,90), (10,70)])
-      #points = convert(Array{Tuple{Real, Real}}, [(10,90), (20,80), (30,70)])
-      #println(points)
 
       # test for repeated points
       repeat = false
@@ -42,16 +39,13 @@ function demoFortune()
       if repeat
          println("REPEATED POINTS!")
          continue
-      else
       end
 
       V, T, Q = Fortune.init(points)
-
+      command = nothing
+      ly = HEIGHT
       Draw.init(WIDTH, HEIGHT)
 
-      command = nothing
-
-      ly = HEIGHT
       while (event = EventQueue.pop(Q)) != nothing
          Fortune.handleEvent(V, T, Q, event) # multiple dispatch decides if it's a site event or circle event
 
