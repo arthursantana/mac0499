@@ -25,7 +25,7 @@ function demoLloyd()
    #Random.seed!(seed)
 
    command = nothing
-   for n in 14:100
+   for n in 3:100
       points = convert(Array{Tuple{Real, Real}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
       if sqrt(n) == floor(sqrt(n))
          continue

@@ -22,6 +22,7 @@ function demoFortune()
       println("Random seed: ", i)
       Random.seed!(i)
       points = convert(Array{Tuple{Real, Real}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
+      #points = convert(Array{Tuple{Real, Real}}, [(90.0, 90.0), (80.0, 50), (70.0, 55.0), (30.0, 85.0), (-100, 45), (35.0, 44.0)])
 
       # test for repeated points
       repeat = false

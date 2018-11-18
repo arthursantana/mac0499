@@ -16,8 +16,8 @@ WIDTH = nothing
 HEIGHT = nothing
 FRAME = 0
 
-colors = ["white"]
-#colors = ["xkcd:grey", "xkcd:crimson", "xkcd:gold", "xkcd:green", "xkcd:azure", "xkcd:beige", "xkcd:silver", "xkcd:lavender", "xkcd:lightgreen", "xkcd:magenta", "xkcd:ivory", "xkcd:maroon", "xkcd:orange", "xkcd:orangered", "xkcd:orchid", "xkcd:pink", "xkcd:plum", "xkcd:gold", "xkcd:salmon", "xkcd:sienna", "xkcd:lime", "xkcd:tan", "xkcd:tomato", "xkcd:violet", "xkcd:wheat", "xkcd:indigo", "xkcd:yellowgreen", "xkcd:chocolate", "xkcd:coral", "xkcd:brown"]
+#colors = ["white"]
+colors = ["xkcd:grey", "xkcd:crimson", "xkcd:gold", "xkcd:green", "xkcd:azure", "xkcd:beige", "xkcd:silver", "xkcd:lavender", "xkcd:lightgreen", "xkcd:magenta", "xkcd:ivory", "xkcd:maroon", "xkcd:orange", "xkcd:orangered", "xkcd:orchid", "xkcd:pink", "xkcd:plum", "xkcd:gold", "xkcd:salmon", "xkcd:sienna", "xkcd:lime", "xkcd:tan", "xkcd:tomato", "xkcd:violet", "xkcd:wheat", "xkcd:indigo", "xkcd:yellowgreen", "xkcd:chocolate", "xkcd:coral", "xkcd:brown"]
 
 
 function init(w, h)
@@ -165,6 +165,7 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
          if start == nothing # special case where there the first couple of points are on the same y coordinate
          else
             Draw.line((p[1], ly), (p[1], start[2]), "xkcd:azure")
+            #Draw.line((p[1], ly), (p[1], start[2]), "xkcd:black")
          end
 		else
          if 0 <= start[1]
@@ -180,6 +181,7 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
          end
 
 			plot(f, "xkcd:azure", st, fn)
+			#plot(f, "xkcd:black", st, fn)
 		end
 
       start = finish
@@ -187,22 +189,22 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
 	end
 
    # draw circumcircles
-   i = 1
-   while i < Q.pos
-      if isa(Q.data[i], EventQueue.CircleEvent) && !(Q.data[i].removed)
-         b = Q.data[i].disappearingArc
-         a = b.prev
-         c = b.next
-         O = Q.data[i].center
-         r = O[2] - Q.data[i].coordinates[2]
-         circle(O, "xkcd:orangered", r)
-         thinLine(O, b.region.generator, "xkcd:orangered")
-         point(O, "xkcd:magenta", true)
-         point((O[1], O[2] - r), "xkcd:orangered", true)
-      end
+   #i = 1
+   #while i < Q.pos
+   #   if isa(Q.data[i], EventQueue.CircleEvent) && !(Q.data[i].removed)
+   #      b = Q.data[i].disappearingArc
+   #      a = b.prev
+   #      c = b.next
+   #      O = Q.data[i].center
+   #      r = O[2] - Q.data[i].coordinates[2]
+   #      circle(O, "xkcd:orangered", r)
+   #      thinLine(O, b.region.generator, "xkcd:orangered")
+   #      point(O, "xkcd:magenta", true)
+   #      point((O[1], O[2] - r), "xkcd:orangered", true)
+   #   end
 
-      i += 1
-   end
+   #   i += 1
+   #end
 
    # draw diagram edges
    for he in V.halfEdges
@@ -213,10 +215,13 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
 
    # draw sweepline
 	line((0, ly), (WIDTH, ly), "xkcd:gold")
+	#line((0, ly), (WIDTH, ly), "xkcd:black")
 	commit()
 end
 
 function voronoiDiagram(V::Diagram.DCEL)
+   global WIDTH, HEIGHT
+
 	#clear("Computing Centroidal Voronoi Tesselations using Lloyd's Algorithm")
 	clear("")
 
@@ -226,6 +231,8 @@ function voronoiDiagram(V::Diagram.DCEL)
    i = 1
    for region in regions
       if size(region[1])[1] > 0
+         #color = (V.regions[i].generator[1]/WIDTH, V.regions[i].generator[2]/HEIGHT, 0.5)
+         #ax[:fill](region[1], region[2], color=color)
          ax[:fill](region[1], region[2], colors[(i % size(colors)[1])+ 1])
       end
       i += 1
