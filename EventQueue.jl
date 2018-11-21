@@ -163,13 +163,4 @@ end
 #end
 
 
-export Event
-export SiteEvent
-export CircleEvent
-export coordinates
-export Heap
-export push!
-export pop
-export remove
-
 end # module

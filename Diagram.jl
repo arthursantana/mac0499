@@ -44,7 +44,7 @@ function DCEL(points::Array{Tuple{Real, Real}, 1})
 
    halfEdges = HalfEdge[]
 
-	return Diagram.DCEL(regions, halfEdges)
+	return DCEL(regions, halfEdges)
 end
 
 
@@ -87,14 +87,40 @@ function regionBorders(V::DCEL)
    return borders
 end
 
-export DCEL
-export HalfEdge
-export Region
-export regions
-export makeTwins
-export concat
-export Rectangle
-export intersect
+function centroidAndArea(region::Region)
+   A = Cx = Cy = 0
+
+   he = region.borderHead
+   while true
+      shoelace = he.origin[1]*he.next.origin[2] - he.origin[2]*he.next.origin[1]
+      A += shoelace
+      Cx += (he.origin[1] + he.next.origin[1]) * shoelace
+      Cy += (he.origin[2] + he.next.origin[2]) * shoelace
+
+      he = he.next
+      if he == region.borderHead
+         break
+      end
+   end
+
+   A /= 2
+   Cx /= 6*A
+   Cy /= 6*A
+
+   return ((Cx, Cy), A)
+end
+
+function centroidsAndAreas(V::DCEL)
+   centroids = Array{Tuple{Real, Real}, 1}([])
+   areas = Array{Real, 1}([])
+   for region in V.regions
+      res = centroidAndArea(region)
+      push!(centroids, (res[1]))
+      push!(areas, (res[2]))
+   end
+
+   return centroids, areas
+end
 
 
 end # module

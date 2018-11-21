@@ -4,7 +4,7 @@ include("EventQueue.jl")
 include("BeachLine.jl")
 include("Fortune.jl")
 include("Intersect.jl")
-include("Lloyd.jl")
+include("Optimization.jl")
 include("Draw.jl")
 
 #using Random
@@ -25,7 +25,7 @@ function demoLloyd()
    #Random.seed!(seed)
 
    command = nothing
-   for n in 3:100
+   for n in 2:100
       points = convert(Array{Tuple{Real, Real}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
       if sqrt(n) == floor(sqrt(n))
          continue
@@ -34,11 +34,7 @@ function demoLloyd()
       if max > 100
          max = 100
       end
-      for i in 1:max
-         #points = convert(Array{Tuple{Real, Real}}, [(10,90), (10,70)])
-         #points = convert(Array{Tuple{Real, Real}}, [(10,90), (20,80), (30,70)])
-         #println(points)
-
+      for i in 1:max*1000
          # test for repeated points
          repeat = false
          for i in 1:length(points)
@@ -55,32 +51,25 @@ function demoLloyd()
          if repeat
             println("REPEATED POINTS!")
             continue
-         else
          end
 
-         V, T, Q = Fortune.init(points)
-
-         Draw.init(WIDTH, HEIGHT)
-
-         ly = HEIGHT
-         while (event = EventQueue.pop(Q)) != nothing
-            Fortune.handleEvent(V, T, Q, event) # multiple dispatch decides if it's a site event or circle event
-
-            ly = EventQueue.coordinates(event)[2] # sweep line height
-         end
+         V = Fortune.compute(points)
 
          Intersect.intersect(V, Intersect.Rectangle(WIDTH, HEIGHT))
 
-         #println("Drawing...")
+         gradient = Optimization.∇f(V, points)
+         println(Optimization.f(V), "\t\t\t", Optimization.norm2(gradient))
+
+         Draw.init(WIDTH, HEIGHT)
          Draw.voronoiDiagram(V)
 
-         points, areas = Lloyd.centroidsAndAreas(V)
+         points, areas = Diagram.centroidsAndAreas(V)
 
          if command != "a"
             println("Press Return for a step or enter \"a\" to animate until the end.")
             command = readline(stdin)
          else
-            sleep(0.0000001)
+            sleep(0.0000001) # make sure stuff is drawn
          end
          n += 1
       end

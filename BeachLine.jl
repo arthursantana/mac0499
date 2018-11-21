@@ -230,7 +230,4 @@ function printTree(T::BST) # for debugging
 end
 
 
-export BST
-export Arc
-
 end # module

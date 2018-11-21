@@ -17,7 +17,7 @@ end
 function demoFortune()
    WIDTH = 100.0
    HEIGHT = 100.0
-   n = 10
+   n = 50
    for i in 1:1000
       println("Random seed: ", i)
       Random.seed!(i)

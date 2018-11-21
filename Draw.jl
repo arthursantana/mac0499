@@ -40,12 +40,26 @@ function clear(title::String)
 
    plt.cla()
    plt.title(title)
-   ax[:set_aspect]("equal")
-   ax[:set_xlim]([0 - FRAME, WIDTH + FRAME])
-   ax[:set_ylim]([0 - FRAME, HEIGHT + FRAME])
-   ax[:grid](false)
-   ax[:get_xaxis]()[:set_visible](false)
-   ax[:get_yaxis]()[:set_visible](false)
+   if WIDTH > 0
+      ax[:set_aspect]("equal")
+      ax[:set_xlim]([0 - FRAME, WIDTH + FRAME])
+      ax[:set_ylim]([0 - FRAME, HEIGHT + FRAME])
+      ax[:grid](false)
+      ax[:get_xaxis]()[:set_visible](false)
+      ax[:get_yaxis]()[:set_visible](false)
+   else
+      ax[:grid](true)
+      ax[:get_xaxis]()[:set_visible](true)
+      ax[:get_yaxis]()[:set_visible](true)
+   end
+end
+
+function legend(xlabel, ylabel)
+   global plt
+
+   plt.xlabel(xlabel)
+   plt.ylabel(ylabel)
+   plt.legend()
 end
 
 function commit()
@@ -90,6 +104,11 @@ function plot(f, color, start, finish)
    plt.plot(x, y, color=color, linewidth=3, zorder=2)
 end
 
+function plot(x, y, color, label, style)
+   global plt
+
+   plt.plot(x, y, color=color, label=label, linestyle=style, linewidth=3, zorder=2)
+end
 
 
 
@@ -189,22 +208,22 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
 	end
 
    # draw circumcircles
-   #i = 1
-   #while i < Q.pos
-   #   if isa(Q.data[i], EventQueue.CircleEvent) && !(Q.data[i].removed)
-   #      b = Q.data[i].disappearingArc
-   #      a = b.prev
-   #      c = b.next
-   #      O = Q.data[i].center
-   #      r = O[2] - Q.data[i].coordinates[2]
-   #      circle(O, "xkcd:orangered", r)
-   #      thinLine(O, b.region.generator, "xkcd:orangered")
-   #      point(O, "xkcd:magenta", true)
-   #      point((O[1], O[2] - r), "xkcd:orangered", true)
-   #   end
+   i = 1
+   while i < Q.pos
+      if isa(Q.data[i], EventQueue.CircleEvent) && !(Q.data[i].removed)
+         b = Q.data[i].disappearingArc
+         a = b.prev
+         c = b.next
+         O = Q.data[i].center
+         r = O[2] - Q.data[i].coordinates[2]
+         circle(O, "xkcd:orangered", r)
+         thinLine(O, b.region.generator, "xkcd:orangered")
+         point(O, "xkcd:magenta", true)
+         point((O[1], O[2] - r), "xkcd:orangered", true)
+      end
 
-   #   i += 1
-   #end
+      i += 1
+   end
 
    # draw diagram edges
    for he in V.halfEdges
@@ -261,6 +280,5 @@ function voronoiDiagram(V::Diagram.DCEL)
 
 	commit()
 end
-
 
 end # module
