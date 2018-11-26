@@ -39,7 +39,7 @@ function gradientDescent()
 
       μ = 0.5
       α = 0.01
-      ϵ = 10^-6
+      ϵ = 10^-1
       λ₀ = 0.01
 
       times = time

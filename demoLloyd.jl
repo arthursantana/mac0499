@@ -25,7 +25,7 @@ function demoLloyd()
    #Random.seed!(seed)
 
    command = nothing
-   for n in 2:100
+   for n in 3:100
       points = convert(Array{Tuple{Real, Real}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
       if sqrt(n) == floor(sqrt(n))
          continue
@@ -34,7 +34,7 @@ function demoLloyd()
       if max > 100
          max = 100
       end
-      for i in 1:max*1000
+      for i in 1:max
          # test for repeated points
          repeat = false
          for i in 1:length(points)
