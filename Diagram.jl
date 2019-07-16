@@ -16,6 +16,8 @@ mutable struct HalfEdge <: halfEdge
    twin::Union{HalfEdge, Nothing}
    next::Union{HalfEdge, Nothing}
    prev::Union{HalfEdge, Nothing}
+
+   generator::Tuple{Real, Real}
 end
 
 function makeTwins(a::HalfEdge, b::HalfEdge)

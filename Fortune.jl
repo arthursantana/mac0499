@@ -53,8 +53,8 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
    dir = Geometry.rotateVectorCCW(Geometry.subVector(arc.region.generator, arcAbove.region.generator))
    #dir = Geometry.multVector(1000, dir)
 
-   he1 = Diagram.HalfEdge(Geometry.subVector(breakpoint, dir), false, nothing, nothing, nothing)
-   he2 = Diagram.HalfEdge(Geometry.addVector(breakpoint, dir), false, nothing, nothing, nothing)
+   he1 = Diagram.HalfEdge(Geometry.subVector(breakpoint, dir), false, nothing, nothing, nothing, arcAbove.region.generator)
+   he2 = Diagram.HalfEdge(Geometry.addVector(breakpoint, dir), false, nothing, nothing, nothing, event.region.generator)
    Diagram.makeTwins(he1, he2)
    Base.push!(V.halfEdges, he1)
    Base.push!(V.halfEdges, he2)
@@ -129,8 +129,8 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
    #dir = Geometry.multVector(1000, dir)
 
    # create new half edge for the newly formed breakpoint
-   he1 = Diagram.HalfEdge(Geometry.addVector(event.center, dir), false, nothing, nothing, nothing)
-   he2 = Diagram.HalfEdge(event.center, false, nothing, nothing, nothing)
+   he1 = Diagram.HalfEdge(Geometry.addVector(event.center, dir), false, nothing, nothing, nothing, arc.prev.region.generator)
+   he2 = Diagram.HalfEdge(event.center, false, nothing, nothing, nothing, arc.next.region.generator)
    Diagram.makeTwins(he1, he2)
    Base.push!(V.halfEdges, he1)
    Base.push!(V.halfEdges, he2)

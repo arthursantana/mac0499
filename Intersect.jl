@@ -144,7 +144,7 @@ function join!(array::Array{Diagram.HalfEdge}, box::Rectangle, a::Diagram.HalfEd
       (ao[2] == bo[2] == box.h && ao[1] > bo[1])
       Diagram.concat(a, b)
    else
-      new = Diagram.HalfEdge(nextCorner(box, ao), false, nothing, nothing, nothing)
+      new = Diagram.HalfEdge(nextCorner(box, ao), false, nothing, nothing, nothing, a.origin)
       push!(array, new)
       Diagram.concat(a, new)
       return join!(array, box, new, b)
@@ -170,7 +170,7 @@ function intersect(V::Diagram.DCEL, box::Rectangle)
          p1, p2 = intersectLine(box, he.origin, he.twin.origin)
          he.origin = p1
          he.twin.origin = p2
-         new = Diagram.HalfEdge(p2, false, nothing, nothing, nothing)
+         new = Diagram.HalfEdge(p2, false, nothing, nothing, nothing, he.origin)
          push!(V.halfEdges, new)
          Diagram.concat(he, new)
          join!(V.halfEdges, box, new, he)
@@ -201,7 +201,7 @@ function intersect(V::Diagram.DCEL, box::Rectangle)
             next = he.next
 
             if he.twin.origin != he.next.origin
-               new = Diagram.HalfEdge(he.twin.origin, false, nothing, nothing, nothing)
+               new = Diagram.HalfEdge(he.twin.origin, false, nothing, nothing, nothing, he.origin)
                push!(V.halfEdges, new)
                Diagram.concat(he, new)
                join!(V.halfEdges, box, new, next)

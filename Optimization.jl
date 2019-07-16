@@ -63,7 +63,7 @@ function errorInRegion(region::Diagram.Region)
    return sum
 end
 
-function f(V::Diagram.DCEL)
+function defaultf(V::Diagram.DCEL)
    sum = 0
    for region in V.regions
       sum += errorInRegion(region)
@@ -72,7 +72,7 @@ function f(V::Diagram.DCEL)
    return sum
 end
 
-function ∇f(V::Diagram.DCEL, points::Array{Tuple{Real, Real}, 1})
+function default∇f(V::Diagram.DCEL, points::Array{Tuple{Real, Real}, 1})
    function weightedDifference(a::Array{Tuple{Real, Real}, 1}, b::Array{Tuple{Real, Real}, 1}, c::Array{Real, 1})
       r = Array{Tuple{Real, Real}}([])
 
@@ -86,6 +86,28 @@ function ∇f(V::Diagram.DCEL, points::Array{Tuple{Real, Real}, 1})
    centroids, areas = Diagram.centroidsAndAreas(V)
 
    return weightedDifference(points, centroids, areas)
+end
+
+function modf(V::Diagram.DCEL)
+   function g(V)
+   end
+
+   return defaultf(V) + g(V)
+end
+
+function mod∇f(V::Diagram.DCEL, points::Array{Tuple{Real, Real}, 1})
+   function ∇g(V, points)
+   end
+
+   return default∇f(V, points) + ∇g(V, points)
+end
+
+function f(V::Diagram.DCEL)
+   return defaultf(V)
+end
+
+function ∇f(V::Diagram.DCEL, points::Array{Tuple{Real, Real}, 1})
+   return default∇f(V, points)
 end
 
 function init(points::Array{Tuple{Real, Real}, 1}, w::Number, h::Number)
