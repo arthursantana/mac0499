@@ -1,13 +1,9 @@
-include("Geometry.jl")
-include("Diagram.jl")
-include("EventQueue.jl")
-include("BeachLine.jl")
-include("Fortune.jl")
-include("Intersect.jl")
-include("Draw.jl")
+import Voronoi
 
 using Random
 using Printf
+include("Draw.jl")
+
 
 
 function randf(start, finish, n)
@@ -29,7 +25,7 @@ function fortuneTime()
    n =100
    for i in 1:10
       points = convert(Array{Tuple{Real, Real}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
-      Fortune.compute(points)
+      Voronoi.Fortune.compute(points)
    end
    
    for n in 3:10000
@@ -39,7 +35,7 @@ function fortuneTime()
       end
 
       points = convert(Array{Tuple{Real, Real}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
-      time = @elapsed Fortune.compute(points)
+      time = @elapsed Voronoi.Fortune.compute(points)
 
       push!(ns, n)
       push!(times, time)

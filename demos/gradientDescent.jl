@@ -1,14 +1,8 @@
-include("Geometry.jl")
-include("Diagram.jl")
-include("EventQueue.jl")
-include("BeachLine.jl")
-include("Fortune.jl")
-include("Intersect.jl")
-include("Optimization.jl")
-include("Draw.jl")
+import Voronoi
 
 using Random
 using Printf
+include("Draw.jl")
 
 
 function randf(start, finish, n)
@@ -35,7 +29,7 @@ function gradientDescent()
       iterations = 1
       fortunes = 1
 
-      time = @elapsed V, f, ∇f, ξ = Optimization.init(points, WIDTH, HEIGHT)
+      time = @elapsed V, f, ∇f, ξ = Voronoi.Optimization.init(points, WIDTH, HEIGHT)
 
       μ = 0.5
       α = 0.01
@@ -51,7 +45,7 @@ function gradientDescent()
 
          d = ∇f
 
-         time = @elapsed V, f, ∇f, ξ, forts = Optimization.lineSearch(points, d, α, λ₀, μ, ϵ, V, f, ∇f, ξ)
+         time = @elapsed V, f, ∇f, ξ, forts = Voronoi.Optimization.lineSearch(points, d, α, λ₀, μ, ϵ, V, f, ∇f, ξ)
 
          times += time
          fortunes += forts

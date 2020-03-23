@@ -1,12 +1,7 @@
-include("Geometry.jl")
-include("Diagram.jl")
-include("EventQueue.jl")
-include("BeachLine.jl")
-include("Fortune.jl")
-include("Intersect.jl")
-include("Draw.jl")
+import Voronoi
 
 using Random
+include("Draw.jl")
 
 
 function randf(start, finish, n)
@@ -42,15 +37,15 @@ function demoFortune()
          continue
       end
 
-      V, T, Q = Fortune.init(points)
+      V, T, Q = Voronoi.Fortune.init(points)
       command = nothing
       ly = HEIGHT
       Draw.init(WIDTH, HEIGHT)
 
-      while (event = EventQueue.pop(Q)) != nothing
-         Fortune.handleEvent(V, T, Q, event) # multiple dispatch decides if it's a site event or circle event
+      while (event = Voronoi.EventQueue.pop(Q)) != nothing
+         Voronoi.Fortune.handleEvent(V, T, Q, event) # multiple dispatch decides if it's a site event or circle event
 
-         ly = EventQueue.coordinates(event)[2] # sweep line height
+         ly = Voronoi.EventQueue.coordinates(event)[2] # sweep line height
          Draw.fortuneIteration(V, T, Q, points, ly)
          if command != "a"
             println("Press Return for a step or enter \"a\" to animate until the end.")

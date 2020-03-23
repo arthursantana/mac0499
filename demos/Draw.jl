@@ -4,10 +4,12 @@ using PyPlot
 using PyCall
 @pyimport matplotlib.patches as patch
 
-using ..Geometry
-using ..Diagram
-using ..BeachLine
-using ..EventQueue
+#using ..Voronoi.Geometry
+#using ..Voronoi.Diagram
+#using ..Voronoi.BeachLine
+#using ..Voronoi.EventQueue
+
+import Voronoi
 
 
 plt = PyPlot
@@ -112,24 +114,24 @@ end
 
 
 
-function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, points::Array{Tuple{Real, Real}}, ly::Real)
-	#clear("Computing Voronoi Diagram using Fortune's Algorithm")
+function fortuneIteration(V::Voronoi.Diagram.DCEL, T::Voronoi.BeachLine.BST, Q::Voronoi.EventQueue.Heap, points::Array{Tuple{Real, Real}}, ly::Real)
+	#clear("Computing Voronoi Voronoi.Diagram using Fortune's Algorithm")
 	clear("")
 
    # draw points
    for p in points
       point(p, "xkcd:black", (ly <= p[2]))
       if ly < p[2]
-         f = Geometry.parabola(p, ly)
+         f = Voronoi.Geometry.parabola(p, ly)
          plot(f, "xkcd:silver", 0, WIDTH)
       end
    end
 
    # calculate parabolas and breakpoints
-	beachLineFoci = BeachLine.beachLine(T, ly)
+	beachLineFoci = Voronoi.BeachLine.beachLine(T, ly)
 
    ### DEBUGGING SECTION
-   #BeachLine.printTree(T)
+   #Voronoi.BeachLine.printTree(T)
    #println(beachLineFoci)
 
    ## print x foci of beach line, without breakpoints
@@ -143,7 +145,7 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
    ## print forward list of beachline arcs x's
    #a = T.root
    #if a != nothing
-   #   while !isa(a, BeachLine.Arc)
+   #   while !isa(a, Voronoi.BeachLine.Arc)
    #      a = a.leftChild
    #   end
    #   while a != nothing
@@ -156,7 +158,7 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
    ## print backwards list of beachline arcs x's
    #a = T.root
    #if a != nothing
-   #   while !isa(a, BeachLine.Arc)
+   #   while !isa(a, Voronoi.BeachLine.Arc)
    #      a = a.rightChild
    #   end
    #   while a != nothing
@@ -178,7 +180,7 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
       end
 
       p = beachLineFoci[i-1]
-		f = Geometry.parabola(p, ly)
+		f = Voronoi.Geometry.parabola(p, ly)
 
 		if f == nothing # point is over the sweep line
          if start == nothing # special case where there the first couple of points are on the same y coordinate
@@ -210,7 +212,7 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
    # draw circumcircles
    i = 1
    while i < Q.pos
-      if isa(Q.data[i], EventQueue.CircleEvent) && !(Q.data[i].removed)
+      if isa(Q.data[i], Voronoi.EventQueue.CircleEvent) && !(Q.data[i].removed)
          b = Q.data[i].disappearingArc
          a = b.prev
          c = b.next
@@ -238,47 +240,47 @@ function fortuneIteration(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap,
 	commit()
 end
 
-function voronoiDiagram(V::Diagram.DCEL)
-   global WIDTH, HEIGHT
+function voronoiDiagram(V::Voronoi.Diagram.DCEL)
+    global WIDTH, HEIGHT
 
-	#clear("Computing Centroidal Voronoi Tesselations using Lloyd's Algorithm")
+    #clear("Computing Centroidal Voronoi Tesselations using Lloyd's Algorithm")
 	clear("")
 
-   regions = Diagram.regionBorders(V)
+    regions = Voronoi.Diagram.regionBorders(V)
 
-   # draw regions
-   i = 1
-   for region in regions
-      if size(region[1])[1] > 0
-         #color = (V.regions[i].generator[1]/WIDTH, V.regions[i].generator[2]/HEIGHT, 0.5)
-         #ax[:fill](region[1], region[2], color=color)
-         ax[:fill](region[1], region[2], colors[(i % size(colors)[1])+ 1])
-      end
-      i += 1
-   end
+    # draw regions
+    i = 1
+    for region in regions
+        if size(region[1])[1] > 0
+            #color = (V.regions[i].generator[1]/WIDTH, V.regions[i].generator[2]/HEIGHT, 0.5)
+            #ax[:fill](region[1], region[2], color=color)
+            ax[:fill](region[1], region[2], colors[(i % size(colors)[1])+ 1])
+        end
+        i += 1
+    end
 
-   # draw diagram edges
-   for he in V.halfEdges
-      if he.origin != nothing
-         if he.twin != nothing
-            Draw.line(he.origin, he.twin.origin, "xkcd:black")
-         elseif he.next != nothing
-            Draw.line(he.origin, he.next.origin, "xkcd:black")
-         end
-      end
-   end
+    # draw diagram edges
+    for he in V.halfEdges
+        if he.origin != nothing
+            if he.twin != nothing
+                Draw.line(he.origin, he.twin.origin, "xkcd:black")
+            elseif he.next != nothing
+                Draw.line(he.origin, he.next.origin, "xkcd:black")
+            end
+        end
+    end
 
-   # draw generators
-   for r in V.regions
-      point(r.generator, "xkcd:black", true)
-   end
+    # draw generators
+    for r in V.regions
+        point(r.generator, "xkcd:black", true)
+    end
 
-   #line((0, 0), (0, HEIGHT), "cyan")
-   #line((0, 0), (WIDTH, 0), "cyan")
-   #line((WIDTH, 0), (WIDTH, HEIGHT), "cyan")
-   #line((0, HEIGHT), (WIDTH, HEIGHT), "cyan")
+    line((0, 0), (0, HEIGHT), "cyan")
+    line((0, 0), (WIDTH, 0), "cyan")
+    line((WIDTH, 0), (WIDTH, HEIGHT), "cyan")
+    line((0, HEIGHT), (WIDTH, HEIGHT), "cyan")
 
-	commit()
+    commit()
 end
 
 end # module

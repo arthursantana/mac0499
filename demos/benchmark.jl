@@ -1,14 +1,8 @@
-include("Geometry.jl")
-include("Diagram.jl")
-include("EventQueue.jl")
-include("BeachLine.jl")
-include("Fortune.jl")
-include("Intersect.jl")
-include("Optimization.jl")
-include("Draw.jl")
+import Voronoi
 
 using Random
 using Printf
+include("Draw.jl")
 
 
 function randf(start, finish, n)
@@ -27,12 +21,12 @@ function benchmarkLloyd(Z::Array{Tuple{Real, Real}, 1}, ϵ::Number)
 
    results = Array{Tuple{Real, Real, Real, Real}}([])
 
-   times = @elapsed V, f, ∇f, ξ = Optimization.init(points, WIDTH, HEIGHT)
+   times = @elapsed V, f, ∇f, ξ = Voronoi.Optimization.init(points, WIDTH, HEIGHT)
    evaluations = 1
    push!(results, (f, ξ, evaluations, times))
 
    while ξ > ϵ
-      time = @elapsed V, f, ξ = Optimization.lloydIteration(points, V)
+      time = @elapsed V, f, ξ = Voronoi.Optimization.lloydIteration(points, V)
 
       evaluations += 1
       times += time
@@ -50,7 +44,7 @@ function benchmarkGradient(Z::Array{Tuple{Real, Real}, 1}, ϵ::Number)
 
    results = Array{Tuple{Real, Real, Real, Real}}([])
 
-   times = @elapsed V, f, ∇f, ξ = Optimization.init(points, WIDTH, HEIGHT)
+   times = @elapsed V, f, ∇f, ξ = Voronoi.Optimization.init(points, WIDTH, HEIGHT)
    evaluations = 1
    push!(results, (f, ξ, evaluations, times))
    μ = 0.5
@@ -60,7 +54,7 @@ function benchmarkGradient(Z::Array{Tuple{Real, Real}, 1}, ϵ::Number)
    while ξ > ϵ
       d = ∇f
 
-      time = @elapsed V, f, ∇f, ξ, evals = Optimization.lineSearch(points, d, α, λ₀, μ, ϵ, V, f, ∇f, ξ)
+      time = @elapsed V, f, ∇f, ξ, evals = Voronoi.Optimization.lineSearch(points, d, α, λ₀, μ, ϵ, V, f, ∇f, ξ)
 
       evaluations += evals
       times += time

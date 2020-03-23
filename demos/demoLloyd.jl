@@ -1,13 +1,7 @@
-include("Geometry.jl")
-include("Diagram.jl")
-include("EventQueue.jl")
-include("BeachLine.jl")
-include("Fortune.jl")
-include("Intersect.jl")
-include("Optimization.jl")
-include("Draw.jl")
+import Voronoi
 
 #using Random
+include("Draw.jl")
 
 
 function randf(start, finish, n)
@@ -53,17 +47,17 @@ function demoLloyd()
             continue
          end
 
-         V = Fortune.compute(points)
+         V = Voronoi.Fortune.compute(points)
 
-         Intersect.intersect(V, Intersect.Rectangle(WIDTH, HEIGHT))
+         Voronoi.Intersect.intersect(V, Voronoi.Intersect.Rectangle(WIDTH, HEIGHT))
 
-         gradient = Optimization.∇f(V, points)
-         println(Optimization.f(V), "\t\t\t", Optimization.norm2(gradient))
+         gradient = Voronoi.Optimization.∇f(V, points)
+         println(Voronoi.Optimization.f(V), "\t\t\t", Voronoi.Optimization.norm2(gradient))
 
          Draw.init(WIDTH, HEIGHT)
          Draw.voronoiDiagram(V)
 
-         points, areas = Diagram.centroidsAndAreas(V)
+         points, areas = Voronoi.Diagram.centroidsAndAreas(V)
 
          if command != "a"
             println("Press Return for a step or enter \"a\" to animate until the end.")
