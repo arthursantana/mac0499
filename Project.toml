@@ -1,6 +1,6 @@
 name = "Voronoi"
 uuid = "66662c87-25d6-4c1c-819b-3e05717c8b1e"
-authors = ["Arthur Santana <rockslave@gmail.com>"]
+authors = ["Arthur Santana <arthursantana@protonmail.com>"]
 version = "0.1.0"
 
 [deps]
