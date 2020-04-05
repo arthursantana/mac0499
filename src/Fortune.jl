@@ -10,7 +10,7 @@ using ..Diagram
 function init(points::Array{Tuple{Real, Real}, 1})
 	n = size(points)[1]
 
-   V = Diagram.DCEL(points)
+    V = Diagram.DCEL(points)
 	T = BeachLine.BST()
 	Q = EventQueue.Heap(3n) # 3n is enough, see page 166 on BCKO (de Berg, Cheong, Kreveld, Overmars)
 
