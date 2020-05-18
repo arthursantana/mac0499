@@ -15,14 +15,13 @@ function parabolaIntersection(p::Tuple{Real, Real}, q::Tuple{Real, Real}, ly::Re
    f = parabola(p, ly)
    g = parabola(q, ly)
 
-   if p[2] == ly && q[2] == ly # both degenerate parabolas, should never happen (unless we have two points exactly equal, which should never happen by hypothesis)
-      return nothing
+   if p[2] == ly && q[2] == ly # both degenerate parabolas
+       midpoint = (p[1] + q[1])/2
+       return (midpoint, ly)
    elseif p[2] == ly
-      point = (p[1], g(p[1]))
-      return point
+      return (p[1], g(p[1]))
    elseif q[2] == ly
-      point = (q[1], f(q[1]))
-      return point
+      return (q[1], f(q[1]))
    end
 
    r = p[2] - ly

@@ -2,7 +2,7 @@ module Draw
 
 using PyPlot
 using PyCall
-@pyimport matplotlib.patches as patch
+patch = pyimport("matplotlib.patches")
 
 #using ..Voronoi.Geometry
 #using ..Voronoi.Diagram
@@ -43,16 +43,16 @@ function clear(title::String)
    plt.cla()
    plt.title(title)
    if WIDTH > 0
-      ax[:set_aspect]("equal")
-      ax[:set_xlim]([0 - FRAME, WIDTH + FRAME])
-      ax[:set_ylim]([0 - FRAME, HEIGHT + FRAME])
-      ax[:grid](false)
-      ax[:get_xaxis]()[:set_visible](false)
-      ax[:get_yaxis]()[:set_visible](false)
+      ax.set_aspect("equal")
+      ax.set_xlim([0 - FRAME, WIDTH + FRAME])
+      ax.set_ylim([0 - FRAME, HEIGHT + FRAME])
+      ax.grid(false)
+      ax.get_xaxis().set_visible(false)
+      ax.get_yaxis().set_visible(false)
    else
-      ax[:grid](true)
-      ax[:get_xaxis]()[:set_visible](true)
-      ax[:get_yaxis]()[:set_visible](true)
+      ax.grid(true)
+      ax.get_xaxis().set_visible(true)
+      ax.get_yaxis().set_visible(true)
    end
 end
 
@@ -74,7 +74,7 @@ end
 function circle_Internal(p::Tuple{Real, Real}, color, fill, r, l)
    global ax
 
-   ax[:add_artist](patch.Circle((p[1], p[2]), color=color, radius=r, fill=fill, zorder=3, linewidth=l))
+   ax.add_artist(patch.Circle((p[1], p[2]), color=color, radius=r, fill=fill, zorder=3, linewidth=l))
 end
 
 function point(p::Tuple{Real, Real}, color, fill)
@@ -115,8 +115,8 @@ end
 
 
 function fortuneIteration(V::Voronoi.Diagram.DCEL, T::Voronoi.BeachLine.BST, Q::Voronoi.EventQueue.Heap, points::Array{Tuple{Real, Real}}, ly::Real)
-	#clear("Computing Voronoi Voronoi.Diagram using Fortune's Algorithm")
-	clear("")
+   #clear("Computing Voronoi Voronoi.Diagram using Fortune's Algorithm")
+   clear("")
 
    # draw points
    for p in points
@@ -128,7 +128,7 @@ function fortuneIteration(V::Voronoi.Diagram.DCEL, T::Voronoi.BeachLine.BST, Q::
    end
 
    # calculate parabolas and breakpoints
-	beachLineFoci = Voronoi.BeachLine.beachLine(T, ly)
+   beachLineFoci = Voronoi.BeachLine.beachLine(T, ly)
 
    ### DEBUGGING SECTION
    #Voronoi.BeachLine.printTree(T)
@@ -254,7 +254,7 @@ function voronoiDiagram(V::Voronoi.Diagram.DCEL)
         if size(region[1])[1] > 0
             #color = (V.regions[i].generator[1]/WIDTH, V.regions[i].generator[2]/HEIGHT, 0.5)
             #ax[:fill](region[1], region[2], color=color)
-            ax[:fill](region[1], region[2], colors[(i % size(colors)[1])+ 1])
+            ax.fill(region[1], region[2], colors[(i % size(colors)[1])+ 1])
         end
         i += 1
     end

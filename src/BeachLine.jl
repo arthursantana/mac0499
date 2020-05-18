@@ -40,6 +40,8 @@ end
 function insert(T::BST, region::Diagram.Region, ly::Real)
    arc = Arc(region, nothing, nothing, nothing, nothing)
 
+   sideOnSpecialCase = nothing
+
    if T.root == nothing
       T.root = arc
       node = nothing
@@ -53,50 +55,63 @@ function insert(T::BST, region::Diagram.Region, ly::Real)
 
          bp = Geometry.parabolaIntersection(node.leftFocus, node.rightFocus, ly)
 
-         if bp == nothing
-            println("SPECIAL CASE: FIRST COUPLE OF POINTS ARE ON THE SAME Y. NOT IMPLEMENTED YET")
+         if arc.region.generator[1] <= bp[1]
+             node = node.leftChild
+             side = LEFT
          else
-            if arc.region.generator[1] <= bp[1]
-               node = node.leftChild
-               side = LEFT
-            else
-               node = node.rightChild
-               side = RIGHT
-            end
+             node = node.rightChild
+             side = RIGHT
          end
       end
 
-      # arrived at a leaf 'node'; switch it for subtree with tree leaves, 'arc' being the middle one, 'node' being on both the others
-      newNode = Arc(node.region, nothing, nothing, arc, node.next)
-      arc.prev = node
-      arc.next = newNode
-      if node.next != nothing
-         node.next.prev = newNode
-      end
-      node.next = arc
+      if (node.region.generator[2] == ly)
+          if node.region.generator[1]  <= arc.region.generator[1]
+              sideOnSpecialCase = RIGHT
+              newSubTree = Breakpoint(node.region.generator, arc.region.generator, parent, node, arc, nothing)
+              node.next = arc
+              arc.prev = node
+          else
+              sideOnSpecialCase = LEFT
+              newSubTree = Breakpoint(arc.region.generator, node.region.generator, parent, arc, node, nothing)
+              arc.next = node
+              node.prev = arc
+          end
 
-      childTree = Breakpoint(arc.region.generator, node.region.generator, nothing, arc, newNode, nothing)
-      newSubTree = Breakpoint(node.region.generator, arc.region.generator, parent, node, childTree, nothing)
-      
-      node.parent = newSubTree
-      childTree.parent = newSubTree
-      arc.parent = childTree
-      newNode.parent = childTree
+          arc.parent = newSubTree
+          node = nothing
+      else
+          # arrived at a leaf 'node'; switch it for subtree with tree leaves, 'arc' being the middle one, 'node' being on both the others
+          newNode = Arc(node.region, nothing, nothing, arc, node.next)
+          arc.prev = node
+          arc.next = newNode
+          if node.next != nothing
+              node.next.prev = newNode
+          end
+          node.next = arc
+
+          childTree = Breakpoint(arc.region.generator, node.region.generator, nothing, arc, newNode, nothing)
+          newSubTree = Breakpoint(node.region.generator, arc.region.generator, parent, node, childTree, nothing)
+
+          node.parent = newSubTree
+          childTree.parent = newSubTree
+          arc.parent = childTree
+          newNode.parent = childTree
+      end
 
       if parent == nothing
-         T.root = newSubTree
+          T.root = newSubTree
       else
-         if side == LEFT
-            parent.leftChild = newSubTree
-         else # RIGHT
-            parent.rightChild = newSubTree
-         end
-
-         # TODO: BALANCE TREE
+          if side == LEFT
+              parent.leftChild = newSubTree
+          else # RIGHT
+              parent.rightChild = newSubTree
+          end
       end
+
+      # TODO: BALANCE TREE
    end
 
-   return arc, node
+   return arc, node, sideOnSpecialCase
 end
 
 function remove(T::BST, arc::Arc)

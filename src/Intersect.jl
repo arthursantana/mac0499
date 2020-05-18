@@ -46,10 +46,14 @@ function intersectLine(box::Rectangle, a::Tuple{Real, Real}, b::Tuple{Real, Real
 
       p = Array{Union{Tuple{Real, Real}, Nothing}, 1}([nothing, nothing])
       i = 1
-      for q in [l, d, r, u]
+      for q in [l, r, d, u]
          if inbounds(box, q)
             p[i] = q
             i += 1
+
+            if i > 2
+                break
+            end
          end
       end
 

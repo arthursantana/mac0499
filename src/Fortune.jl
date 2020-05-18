@@ -6,6 +6,7 @@ using ..EventQueue
 using ..BeachLine
 using ..Diagram
 
+@enum SIDE LEFT RIGHT
 
 function init(points::Array{Tuple{Real, Real}, 1})
 	n = size(points)[1]
@@ -25,43 +26,65 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
    #println("SITE EVENT: ", event.region.generator)
    ly = event.region.generator[2] # sweep line
 
-	arc, arcAbove = BeachLine.insert(T, event.region, ly)
+   arc, arcAbove, sideOnSpecialCase = BeachLine.insert(T, event.region, ly)
 
-   if arcAbove == nothing
-      return
+   if T.root == arc
+       return
    end
 
-   if arcAbove.disappearsAt != nothing # circle event for arc vertically above 'arc' was a false alarm
-      EventQueue.remove(Q, arcAbove.disappearsAt)
-      arcAbove.disappearsAt = nothing
-   end
+   if arcAbove == nothing # first couple of points have the same y
+       bp = Geometry.parabolaIntersection(arc.parent.leftFocus, arc.parent.rightFocus, ly)
 
-   rightBreakpoint = arc.parent
-   leftBreakpoint = rightBreakpoint.parent
+       if sideOnSpecialCase == LEFT
+           left = arc
+           right = arc.parent.rightChild
+       else
+           left = arc.parent.rightChild
+           right = arc
+       end
 
-   # create half edge records for each new breakpoint
-   f = Geometry.parabola(arcAbove.region.generator, ly)
-   x = event.region.generator[1]
+       dir = Geometry.rotateVectorCCW(Geometry.subVector(left.region.generator, right.region.generator))
 
-   if f != nothing
-      breakpoint = (x, f(x))
+       he1 = Diagram.HalfEdge(Geometry.subVector(bp, dir), false, nothing, nothing, nothing, left.region.generator)
+       he2 = Diagram.HalfEdge(Geometry.addVector(bp, dir), false, nothing, nothing, nothing, right.region.generator)
+       Diagram.makeTwins(he1, he2)
+       Base.push!(V.halfEdges, he1)
+       Base.push!(V.halfEdges, he2)
+       arc.parent.halfEdge = he1
+       left.region.borderHead = he1 # following the convention that inside half-edges go counter-clockwise
+       right.region.borderHead = he2
    else
-      breakpoint = nothing
+       if arcAbove.disappearsAt != nothing # circle event for arc vertically above 'arc' was a false alarm
+          EventQueue.remove(Q, arcAbove.disappearsAt)
+          arcAbove.disappearsAt = nothing
+       end
+
+       rightBreakpoint = arc.parent
+       leftBreakpoint = rightBreakpoint.parent
+
+       # create half edge records for each new breakpoint
+       f = Geometry.parabola(arcAbove.region.generator, ly)
+       x = event.region.generator[1]
+
+       if f != nothing
+           breakpoint = (x, f(x))
+       else
+           breakpoint = nothing
+       end
+
+       # direction of the halfedge, rotating clockwise around the arc above (always going right)
+       dir = Geometry.rotateVectorCCW(Geometry.subVector(arc.region.generator, arcAbove.region.generator))
+
+       he1 = Diagram.HalfEdge(Geometry.subVector(breakpoint, dir), false, nothing, nothing, nothing, arcAbove.region.generator)
+       he2 = Diagram.HalfEdge(Geometry.addVector(breakpoint, dir), false, nothing, nothing, nothing, event.region.generator)
+       Diagram.makeTwins(he1, he2)
+       Base.push!(V.halfEdges, he1)
+       Base.push!(V.halfEdges, he2)
+       leftBreakpoint.halfEdge = he1
+       rightBreakpoint.halfEdge = he2
+       event.region.borderHead = he2 # following the convention that inside half-edges go counter-clockwise
+       arcAbove.region.borderHead = he1
    end
-
-   # direction of the halfedge, rotating clockwise around the arc above (always going right)
-   dir = Geometry.rotateVectorCCW(Geometry.subVector(arc.region.generator, arcAbove.region.generator))
-   #dir = Geometry.multVector(1000, dir)
-
-   he1 = Diagram.HalfEdge(Geometry.subVector(breakpoint, dir), false, nothing, nothing, nothing, arcAbove.region.generator)
-   he2 = Diagram.HalfEdge(Geometry.addVector(breakpoint, dir), false, nothing, nothing, nothing, event.region.generator)
-   Diagram.makeTwins(he1, he2)
-   Base.push!(V.halfEdges, he1)
-   Base.push!(V.halfEdges, he2)
-   leftBreakpoint.halfEdge = he1
-   rightBreakpoint.halfEdge = he2
-   event.region.borderHead = he2 # following the convention that inside half-edges go counter-clockwise
-   arcAbove.region.borderHead = he1
 
    # check for new circle events where 'arc' is the rightmost arc
    c = arc
