@@ -65,15 +65,23 @@ function insert(T::BST, region::Diagram.Region, ly::Real)
       end
 
       if (node.region.generator[2] == ly)
-          if node.region.generator[1]  <= arc.region.generator[1]
+          if node.region.generator[1] <= arc.region.generator[1]
               sideOnSpecialCase = RIGHT
               newSubTree = Breakpoint(node.region.generator, arc.region.generator, parent, node, arc, nothing)
+              arc.next = node.next
+              if arc.next != nothing
+                  arc.next.prev = arc
+              end
               node.next = arc
               arc.prev = node
           else
               sideOnSpecialCase = LEFT
               newSubTree = Breakpoint(arc.region.generator, node.region.generator, parent, arc, node, nothing)
               arc.next = node
+              arc.prev = node.prev
+              if arc.prev != nothing
+                  arc.prev.next = arc
+              end
               node.prev = arc
           end
 

@@ -19,10 +19,7 @@ function gradientDescent()
    Random.seed!(seed)
 
    command = nothing
-   for n in 3:100
-      if sqrt(n) == floor(sqrt(n))
-         continue
-      end
+   for n in 2:100
       points = convert(Array{Tuple{Real, Real}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
 
 
