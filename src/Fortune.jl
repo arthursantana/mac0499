@@ -24,6 +24,7 @@ end
 
 function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, event::EventQueue.SiteEvent)
    #println("SITE EVENT: ", event.region.generator)
+   #readline(stdin)
    ly = event.region.generator[2] # sweep line
 
    arc, arcAbove, sideOnSpecialCase = BeachLine.insert(T, event.region, ly)
@@ -121,7 +122,7 @@ end
 
 function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, event::EventQueue.CircleEvent)
    #println("CIRCLE EVENT: ", event.coordinates, event.center)
-   ly = event.coordinates[2] # sweep line
+   #readline(stdin)
    arc = event.disappearingArc
 
    # find the Voronoi edges that are going to join together

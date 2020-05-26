@@ -17,9 +17,9 @@ function demoFortune()
       #println("Random seed: ", i)
       #Random.seed!(i)
       #points = convert(Array{Tuple{Real, Real}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
-      points = convert(Array{Tuple{Real, Real}}, [(90.0, 90.0), (80.0, 50), (70.0, 55.0), (30.0, 85.0), (-100, 45), (35.0, 44.0),
+      points = convert(Array{Tuple{Real, Real}}, [(90.0, 90.0), (80.0, 50), (70.0, 55.0), (30.0, 85.0), (30, 45), (35.0, 44.0),
                                                   (1, 90),
-                                                  (2, 90), (3, 90), (4, 90),
+                                                  (5, 90), (10, 90), (15, 90),
                                                   (1, 1), (2, 1), (3, 1)
                                                  ])
 

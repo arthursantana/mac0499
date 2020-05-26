@@ -36,6 +36,57 @@ function BST()
    return BST(nothing)
 end
 
+function fixBreakpointsUpwards(subTree)
+   newBreakpoint = nothing
+
+   leftExtreme = rightExtreme = subTree
+   while isa(leftExtreme, Breakpoint)
+      leftExtreme = leftExtreme.leftChild
+   end
+   while isa(rightExtreme, Breakpoint)
+      rightExtreme = rightExtreme.rightChild
+   end
+
+   println(leftExtreme.region.generator)
+   println(rightExtreme.region.generator)
+
+   parent = subTree.parent
+   while parent != nothing
+      if leftExtreme == rightExtreme == nothing
+         break # nothing else upwards can change
+      end
+
+      if parent.leftChild == subTree
+         if rightExtreme != nothing
+            if parent.leftFocus != rightExtreme.region.generator
+               println("FIX LEFT")
+               parent.leftFocus = rightExtreme.region.generator
+               newBreakpoint = parent
+            end
+            rightExtreme = nothing # nothing means no change
+         end
+      elseif parent.rightChild == subTree
+         if leftExtreme != nothing
+            if parent.rightFocus != leftExtreme.region.generator
+               println("FIX RIGHT")
+               parent.rightFocus = leftExtreme.region.generator
+               newBreakpoint = parent
+            end
+            leftExtreme = nothing # nothing means no change
+         end
+      else
+         println("NOOOPE")
+      end
+
+      subTree = subTree.parent
+      parent = subTree.parent
+   end
+
+   if newBreakpoint != nothing
+       println("new breakpoint: (", newBreakpoint.leftFocus, ", ", newBreakpoint.rightFocus, ")")
+   end
+   return newBreakpoint
+end
 
 function insert(T::BST, region::Diagram.Region, ly::Real)
    arc = Arc(region, nothing, nothing, nothing, nothing)
@@ -85,7 +136,7 @@ function insert(T::BST, region::Diagram.Region, ly::Real)
               node.prev = arc
           end
 
-          arc.parent = newSubTree
+          node.parent = arc.parent = newSubTree
           node = nothing
       else
           # arrived at a leaf 'node'; switch it for subtree with tree leaves, 'arc' being the middle one, 'node' being on both the others
@@ -116,6 +167,8 @@ function insert(T::BST, region::Diagram.Region, ly::Real)
           end
       end
 
+      fixBreakpointsUpwards(newSubTree)
+
       # TODO: BALANCE TREE
    end
 
@@ -145,49 +198,11 @@ function remove(T::BST, arc::Arc)
       parent.parent.rightChild = other
    end
 
-   # fix breakpoints upwards
-   subTree = other
-   newBreakpoint = nothing
-
-   leftExtreme = rightExtreme = subTree
-   while isa(leftExtreme, Breakpoint)
-      leftExtreme = leftExtreme.leftChild
-   end
-   while isa(rightExtreme, Breakpoint)
-      rightExtreme = rightExtreme.rightChild
-   end
-
-   parent = subTree.parent
-   while parent != nothing
-      if leftExtreme == rightExtreme == nothing
-         break # nothing else upwards can change
-      end
-
-      if parent.leftChild == subTree
-         if rightExtreme != nothing
-            if parent.leftFocus != rightExtreme.region.generator
-               parent.leftFocus = rightExtreme.region.generator
-               newBreakpoint = parent
-            end
-            rightExtreme = nothing # nothing means no change
-         end
-      else
-         if leftExtreme != nothing
-            if parent.rightFocus != leftExtreme.region.generator
-               parent.rightFocus = leftExtreme.region.generator
-               newBreakpoint = parent
-            end
-            leftExtreme = nothing # nothing means no change
-         end
-      end
-
-      subTree = subTree.parent
-      parent = subTree.parent
-   end
-
-   return newBreakpoint
+   newBreakpoint = fixBreakpointsUpwards(other)
 
    # TODO: BALANCE TREE
+
+   return newBreakpoint
 end
 
 
