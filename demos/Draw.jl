@@ -131,16 +131,16 @@ function fortuneIteration(V::Voronoi.Diagram.DCEL, T::Voronoi.BeachLine.BST, Q::
    beachLineFoci = Voronoi.BeachLine.beachLine(T, ly)
 
    ### DEBUGGING SECTION
-   Voronoi.BeachLine.printTree(T)
+   #Voronoi.BeachLine.printTree(T)
    #println(beachLineFoci)
 
    ## print x foci of beach line, without breakpoints
-   i = 1
-   while i <= size(beachLineFoci)[1]
-      print(beachLineFoci[i][1], " ")
-      i += 2
-   end
-   println()
+   #i = 1
+   #while i <= size(beachLineFoci)[1]
+   #   print(beachLineFoci[i][1], " ")
+   #   i += 2
+   #end
+   #println()
 
    ## print forward list of beachline arcs x's
    #a = T.root

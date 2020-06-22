@@ -1,6 +1,5 @@
 module Fortune
 
-
 using ..Geometry
 using ..EventQueue
 using ..BeachLine
@@ -36,14 +35,15 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
    if arcAbove == nothing # first couple of points have the same y
        bp = Geometry.parabolaIntersection(arc.parent.leftFocus, arc.parent.rightFocus, ly)
 
-       if sideOnSpecialCase == LEFT
+       if sideOnSpecialCase == BeachLine.LEFT
            left = arc
            right = arc.parent.rightChild
        else
-           left = arc.parent.rightChild
+           left = arc.parent.leftChild
            right = arc
        end
 
+       #dir = Geometry.rotateVectorCCW(Geometry.subVector(left.region.generator, right.region.generator))
        dir = Geometry.rotateVectorCCW(Geometry.subVector(left.region.generator, right.region.generator))
 
        he1 = Diagram.HalfEdge(Geometry.subVector(bp, dir), false, nothing, nothing, nothing, left.region.generator)
@@ -51,7 +51,7 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
        Diagram.makeTwins(he1, he2)
        Base.push!(V.halfEdges, he1)
        Base.push!(V.halfEdges, he2)
-       arc.parent.halfEdge = he1
+       left.parent.halfEdge = he1
        left.region.borderHead = he1 # following the convention that inside half-edges go counter-clockwise
        right.region.borderHead = he2
    else
@@ -121,7 +121,7 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
 end
 
 function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, event::EventQueue.CircleEvent)
-   #println("CIRCLE EVENT: ", event.coordinates, event.center)
+   println("CIRCLE EVENT: ", event.coordinates, "; ", event.center)
    #readline(stdin)
    arc = event.disappearingArc
 

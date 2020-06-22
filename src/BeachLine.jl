@@ -47,9 +47,6 @@ function fixBreakpointsUpwards(subTree)
       rightExtreme = rightExtreme.rightChild
    end
 
-   println(leftExtreme.region.generator)
-   println(rightExtreme.region.generator)
-
    parent = subTree.parent
    while parent != nothing
       if leftExtreme == rightExtreme == nothing
@@ -59,7 +56,6 @@ function fixBreakpointsUpwards(subTree)
       if parent.leftChild == subTree
          if rightExtreme != nothing
             if parent.leftFocus != rightExtreme.region.generator
-               println("FIX LEFT")
                parent.leftFocus = rightExtreme.region.generator
                newBreakpoint = parent
             end
@@ -68,23 +64,17 @@ function fixBreakpointsUpwards(subTree)
       elseif parent.rightChild == subTree
          if leftExtreme != nothing
             if parent.rightFocus != leftExtreme.region.generator
-               println("FIX RIGHT")
                parent.rightFocus = leftExtreme.region.generator
                newBreakpoint = parent
             end
             leftExtreme = nothing # nothing means no change
          end
-      else
-         println("NOOOPE")
       end
 
       subTree = subTree.parent
       parent = subTree.parent
    end
 
-   if newBreakpoint != nothing
-       println("new breakpoint: (", newBreakpoint.leftFocus, ", ", newBreakpoint.rightFocus, ")")
-   end
    return newBreakpoint
 end
 

@@ -14,8 +14,10 @@ function inbounds(box::Rectangle, p::Tuple{Real, Real})
    return (0 <= p[1] <= box.w) && (0 <= p[2] <= box.h)
 end
 
-function intersectLine(box::Rectangle, a::Tuple{Real, Real}, b::Tuple{Real, Real})
+function intersectLine(box::Rectangle, a::Tuple{Real, Real}, b::Tuple{Real, Real}, ag::Tuple{Real, Real}, bg::Tuple{Real, Real})
+    println("intersect(", a, ", ", b, ")")
    dir = Geometry.subVector(b, a)
+   println("dir: ", dir)
    
    if dir[1] == 0
       if !(0 <= a[1] <= box.w) # no intersection
@@ -57,6 +59,21 @@ function intersectLine(box::Rectangle, a::Tuple{Real, Real}, b::Tuple{Real, Real
          end
       end
 
+      if p[1] == nothing
+          if p[2] == nothing
+              println("nada")
+              return nothing, nothing
+          else
+              println("p[2]")
+              return p[2], p[2]
+          end
+      elseif p[2] == nothing
+          println("p[1]")
+          return p[1], p[1]
+      end
+
+      println("Caso normal.")
+
       if (a[1] < b[1] && p[1] < p[2]) || (a[1] > b[1] && p[1] > p[2])
          return p[1], p[2]
       else
@@ -70,10 +87,13 @@ function intersectEdge(box::Rectangle, he::Diagram.HalfEdge)
       return nothing, nothing # no intersection
    end
 
-   cp1, cp2 = intersectLine(box, he.origin, he.twin.origin)
+   println("HE, HE.TWIN: ", he.generator, he.twin.generator)
+   cp1, cp2 = intersectLine(box, he.origin, he.twin.origin, he.generator, he.twin.generator)
    if cp1 == nothing
       return nothing, nothing # no intersection
    end
+
+   println("cp1,2: ", cp1, ", ", cp2)
 
    # calculate relative distance to p1, using x if possible, y otherwise
    dir = Geometry.subVector(cp2, cp1)
@@ -123,6 +143,9 @@ function intersectEdge(box::Rectangle, he::Diagram.HalfEdge)
       ret2 = cp2
    end
 
+   println("ret1,2: ", ret1, ", ", ret2)
+   println("")
+   println("")
    return ret1, ret2
 end
 
@@ -171,7 +194,7 @@ function intersect(V::Diagram.DCEL, box::Rectangle)
       region.borderHead = he
 
       if !he.isFixed && !he.twin.isFixed # unlimited line
-         p1, p2 = intersectLine(box, he.origin, he.twin.origin)
+         p1, p2 = intersectLine(box, he.origin, he.twin.origin, he.generator, he.twin.generator)
          he.origin = p1
          he.twin.origin = p2
          new = Diagram.HalfEdge(p2, false, nothing, nothing, nothing, he.origin)
