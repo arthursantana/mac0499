@@ -14,9 +14,18 @@ function inbounds(box::Rectangle, p::Tuple{Real, Real})
    return (0 <= p[1] <= box.w) && (0 <= p[2] <= box.h)
 end
 
-function intersectLine(box::Rectangle, a::Tuple{Real, Real}, b::Tuple{Real, Real})
-    println("intersect(", a, ", ", b, ")")
+function intersectLine(box::Rectangle, agen::Tuple{Real, Real}, bgen::Tuple{Real, Real})
+   center = ((agen[1] + bgen[1])/2, (agen[2] + bgen[2])/2)
+
+   println("intersect_gens(", agen, ", ", bgen, ")")
+   println("center: ", center)
+   dir_gen = Geometry.rotateVectorCCW(Geometry.subVector(bgen, agen))
+
+   b = Geometry.addVector(center, dir_gen)
+   a = Geometry.subVector(center, dir_gen)
+
    dir = Geometry.subVector(b, a)
+   println("dir_gen: ", dir_gen)
    println("dir: ", dir)
    
    if dir[1] == 0
@@ -118,7 +127,7 @@ function intersectEdge(box::Rectangle, he::Diagram.HalfEdge)
    end
 
    println("HE, HE.TWIN: ", he.origin, he.twin.origin)
-   cp1, cp2 = intersectLine(box, he.origin, he.twin.origin)
+   cp1, cp2 = intersectLine(box, he.generator, he.twin.generator)
    if cp1 == nothing
           println("NOTHING, NOTHING da hora V")
       return nothing, nothing # no intersection
@@ -262,7 +271,7 @@ function intersect(V::Diagram.DCEL, box::Rectangle)
       he = region.borderHead
 
       if !he.isFixed && !he.twin.isFixed # unlimited line
-         p1, p2 = intersectLine(box, he.origin, he.twin.origin)
+         p1, p2 = intersectLine(box, he.generator, he.twin.generator)
          he.origin = p1
          he.twin.origin = p2
          new = Diagram.HalfEdge(p2, false, nothing, nothing, nothing, he.origin)

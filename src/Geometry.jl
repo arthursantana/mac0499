@@ -1,5 +1,11 @@
 module Geometry
 
+safe = 1000
+
+function setSafe(s)
+    safe = s
+end
+
 # returns a function that describes a parabola defined by a focus p and a directrix of vertical component ly
 function parabola(p::Tuple{Real, Real}, ly::Real)
    if p[2] == ly
@@ -17,7 +23,7 @@ function parabolaIntersection(p::Tuple{Real, Real}, q::Tuple{Real, Real}, ly::Re
 
    if p[2] == ly && q[2] == ly # both degenerate parabolas
        midpoint = (p[1] + q[1])/2
-       return (midpoint, ly)
+       return (midpoint, ly + safe)
    elseif p[2] == ly
       return (p[1], g(p[1]))
    elseif q[2] == ly

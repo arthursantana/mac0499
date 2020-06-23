@@ -7,12 +7,14 @@ using ..Diagram
 
 @enum SIDE LEFT RIGHT
 
-function init(points::Array{Tuple{Real, Real}, 1})
+function init(points::Array{Tuple{Real, Real}, 1}, W, H)
 	n = size(points)[1]
 
     V = Diagram.DCEL(points)
 	T = BeachLine.BST()
 	Q = EventQueue.Heap(3n) # 3n is enough, see page 166 on BCKO (de Berg, Cheong, Kreveld, Overmars)
+
+    Geometry.setSafe(H)
 
 	for region in V.regions
 		EventQueue.push!(Q, EventQueue.SiteEvent(region))
