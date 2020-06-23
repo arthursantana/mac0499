@@ -209,8 +209,8 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
    end
 end
 
-function compute(points::Array{Tuple{Real, Real}, 1})
-   V, T, Q = init(points)
+function compute(points::Array{Tuple{Real, Real}, 1}, W, H)
+   V, T, Q = init(points, W, H)
 
    while (event = EventQueue.pop(Q)) != nothing
       Fortune.handleEvent(V, T, Q, event)
