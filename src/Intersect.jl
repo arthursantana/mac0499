@@ -17,42 +17,31 @@ end
 function intersectLine(box::Rectangle, agen::Tuple{Real, Real}, bgen::Tuple{Real, Real})
    center = ((agen[1] + bgen[1])/2, (agen[2] + bgen[2])/2)
 
-   println("intersect_gens(", agen, ", ", bgen, ")")
-   println("center: ", center)
    dir_gen = Geometry.rotateVectorCCW(Geometry.subVector(bgen, agen))
 
    b = Geometry.addVector(center, dir_gen)
    a = Geometry.subVector(center, dir_gen)
 
    dir = Geometry.subVector(b, a)
-   println("dir_gen: ", dir_gen)
-   println("dir: ", dir)
    
    if dir[1] == 0
       if !(0 <= a[1] <= box.w) # no intersection
-          println("NOTHING, NOTHING da hora I")
          return nothing, nothing
       end
 
       if a[2] < b[2]
-          println("CASE a")
          return (a[1], 0), (a[1], box.h)
       else
-          println("CASE b")
          return (a[1], box.h), (a[1], 0)
       end
    elseif dir[2] == 0
       if !(0 <= a[2] <= box.h) # no intersection
-          println("CASE c")
-          println("NOTHING, NOTHING da hora II")
          return nothing, nothing
       end
 
       if a[1] < b[1]
-          println("CASE d")
          return (0, a[2]), (box.w, a[2])
       else
-          println("CASE e")
          return (box.w, a[2]), (0, a[2])
       end
    else
@@ -61,11 +50,6 @@ function intersectLine(box::Rectangle, agen::Tuple{Real, Real}, bgen::Tuple{Real
       d = (a[1] - (a[2])*(dir[1]/dir[2]), 0)
       r = (box.w, a[2] - (a[1]-box.w)*(dir[2]/dir[1]))
       u = (a[1] - (a[2]-box.h)*(dir[1]/dir[2]), box.h)
-
-      println("L: ", l)
-      println("R: ", r)
-      println("D: ", d)
-      println("U: ", u)
 
       p = Array{Union{Tuple{Real, Real}, Nothing}, 1}([nothing, nothing])
       i = 1
@@ -80,32 +64,19 @@ function intersectLine(box::Rectangle, agen::Tuple{Real, Real}, bgen::Tuple{Real
          end
       end
 
-      println("P1: ", p[1])
-      println("P2: ", p[2])
-
       if p[1] == nothing
           if p[2] == nothing
-              println("CASE f")
-          println("NOTHING, NOTHING da hora III")
               return nothing, nothing
           else
-              println("p[2]")
-              println("CASE g")
               return p[2], p[2]
           end
       elseif p[2] == nothing
-          println("p[1]")
-          println("CASE h")
           return p[1], p[1]
       end
 
-      println("Caso normal.")
-
       if (a[1] < b[1] && p[1] < p[2]) || (a[1] > b[1] && p[1] > p[2])
-          println("CASE i")
          return p[1], p[2]
       else
-          println("CASE j")
          return p[2], p[1]
       end
    end
@@ -113,7 +84,6 @@ end
 
 function intersectEdge(box::Rectangle, he::Diagram.HalfEdge)
    if he.origin == nothing
-          println("NOTHING, NOTHING da hora IV")
       return nothing, nothing # no intersection
    end
 
@@ -126,10 +96,8 @@ function intersectEdge(box::Rectangle, he::Diagram.HalfEdge)
        end
    end
 
-   println("HE, HE.TWIN: ", he.origin, he.twin.origin)
    cp1, cp2 = intersectLine(box, he.generator, he.twin.generator)
    if cp1 == nothing
-          println("NOTHING, NOTHING da hora V")
       return nothing, nothing # no intersection
    end
 
@@ -231,8 +199,6 @@ function joinAround!(array::Array{Diagram.HalfEdge}, box::Rectangle, a::Diagram.
    ao = a.origin
    bo = b.origin
 
-   println("ORIGINS: ", ao, ", ", bo)
-
    if (ao[1] == bo[1] == 0 && ao[2] > bo[2]) ||
       (ao[1] == bo[1] == box.w && ao[2] < bo[2]) ||
       (ao[2] == bo[2] == 0 && ao[1] < bo[1]) ||
@@ -262,12 +228,9 @@ function intersect(V::Diagram.DCEL, box::Rectangle)
 
       region.borderHead = he
 
-      println("\n\n\nregião da hora ###")
       while he.next != nothing && he.next != region.borderHead
-          println("região da hora | ", he.origin, " -> ", he.twin.origin)
           he = he.next
       end
-      println("região da hora | ", he.origin, " -> ", he.twin.origin)
       he = region.borderHead
 
       if !he.isFixed && !he.twin.isFixed # unlimited line
@@ -277,7 +240,6 @@ function intersect(V::Diagram.DCEL, box::Rectangle)
          new = Diagram.HalfEdge(p2, false, nothing, nothing, nothing, he.origin)
          push!(V.halfEdges, new)
          Diagram.concat(he, new)
-         println("AH! Vou joinzar ", he.origin)
          joinAround!(V.halfEdges, box, new, he)
       else
          while true
@@ -298,12 +260,9 @@ function intersect(V::Diagram.DCEL, box::Rectangle)
          end
          region.borderHead = he
 
-         println("região CORTADINHA da hora ###")
          while he.next != nothing && he.next != region.borderHead
-             println("região CORTADINHA da hora | ", he.origin, " -> ", he.twin.origin)
              he = he.next
          end
-         println("região CORTADINHA da hora | ", he.origin, " -> ", he.twin.origin)
          he = region.borderHead
 
          while true
@@ -317,7 +276,6 @@ function intersect(V::Diagram.DCEL, box::Rectangle)
                new = Diagram.HalfEdge(he.twin.origin, false, nothing, nothing, nothing, he.origin)
                push!(V.halfEdges, new)
                Diagram.concat(he, new)
-               println("Vou joinzar ", he.origin, ", ", he.twin.origin)
                joinAround!(V.halfEdges, box, new, next)
             end
 

@@ -123,7 +123,7 @@ function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, even
 end
 
 function handleEvent(V::Diagram.DCEL, T::BeachLine.BST, Q::EventQueue.Heap, event::EventQueue.CircleEvent)
-   println("CIRCLE EVENT: ", event.coordinates, "; ", event.center)
+   #println("CIRCLE EVENT: ", event.coordinates, "; ", event.center)
    #readline(stdin)
    arc = event.disappearingArc
 
