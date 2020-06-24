@@ -40,6 +40,18 @@ function coordinates(ev::CircleEvent)
    return ev.coordinates
 end
 
+function key_gt(ev1, ev2)
+    if coordinates(ev1)[2] > coordinates(ev2)[2]
+        return true
+    elseif coordinates(ev1)[2] == coordinates(ev2)[2]
+        if coordinates(ev1)[1] < coordinates(ev2)[1]
+            return true
+        end
+    end
+
+    return false
+end
+
 
 mutable struct Heap
    data::Array{Event}
@@ -79,7 +91,8 @@ function largestChild(h::Heap, i::Int)
       return -1 # no children
    elseif h.pos  == r
       return l # no right child
-   elseif key(h.data[l]) >= key(h.data[r])
+   elseif !key_gt(h.data[r], h.data[l])
+   #elseif key(h.data[l]) >= key(h.data[r])
       return l
    else
       return r
@@ -97,7 +110,8 @@ function push!(h::Heap, ev::Event)
    h.data[i] = ev
 
    p = parent(i)
-   while i > 1 && key(h.data[i]) > key(h.data[p])
+   #while i > 1 && key(h.data[i]) > key(h.data[p])
+   while i > 1 && key_gt(h.data[i], h.data[p])
       # bubble up
       swap = h.data[i]
       h.data[i] = h.data[p]
@@ -128,7 +142,8 @@ function pop(h::Heap)
 
       i = 1
       c = largestChild(h, i)
-      while c != -1 && key(h.data[c]) > key(h.data[i])
+      #while c != -1 && key(h.data[c]) > key(h.data[i])
+      while c != -1 && key_gt(h.data[c], h.data[i])
          # trickle down
          swap = h.data[i]
          h.data[i] = h.data[c]
