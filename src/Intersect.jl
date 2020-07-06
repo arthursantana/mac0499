@@ -14,13 +14,19 @@ function inbounds(box::Rectangle, p::Tuple{Real, Real})
    return (0 <= p[1] <= box.w) && (0 <= p[2] <= box.h)
 end
 
-function intersectLine(box::Rectangle, agen::Tuple{Real, Real}, bgen::Tuple{Real, Real})
+function generateValidPoints(agen::Tuple{Real, Real}, bgen::Tuple{Real, Real})
    center = ((agen[1] + bgen[1])/2, (agen[2] + bgen[2])/2)
 
    dir_gen = Geometry.rotateVectorCCW(Geometry.subVector(bgen, agen))
 
    b = Geometry.addVector(center, dir_gen)
    a = Geometry.subVector(center, dir_gen)
+
+   return a, b
+end
+
+function intersectLine(box::Rectangle, agen::Tuple{Real, Real}, bgen::Tuple{Real, Real})
+    a, b = generateValidPoints(agen, bgen)
 
    dir = Geometry.subVector(b, a)
    
@@ -82,23 +88,47 @@ function intersectLine(box::Rectangle, agen::Tuple{Real, Real}, bgen::Tuple{Real
    end
 end
 
+function norm2(v)
+    return v[1]^2 + v[2]^2
+end
+
 function intersectEdge(box::Rectangle, he::Diagram.HalfEdge)
    if he.origin == nothing
       return nothing, nothing # no intersection
    end
 
-   if !inbounds(box, he.origin) && !inbounds(box, he.twin.origin)
-       if (he.origin[1] < 0 && he.twin.origin[1] < 0) ||
-           (he.origin[1] > box.w && he.twin.origin[1] > box.w) ||
-           (he.origin[2] < 0 && he.twin.origin[2] < 0) ||
-           (he.origin[2] > box.h && he.twin.origin[2] > box.h)
-           return nothing, nothing
-       end
-   end
-
    cp1, cp2 = intersectLine(box, he.generator, he.twin.generator)
+
    if cp1 == nothing
       return nothing, nothing # no intersection
+   end
+
+   if !inbounds(box, he.origin) && !inbounds(box, he.twin.origin)
+       if !he.isFixed || !he.twin.isFixed
+           if (he.isFixed && he.twin.isFixed) &&
+               ((he.origin[1] < 0 && he.twin.origin[1] < 0) ||
+                (he.origin[1] > box.w && he.twin.origin[1] > box.w) ||
+                (he.origin[2] < 0 && he.twin.origin[2] < 0) ||
+                (he.origin[2] > box.h && he.twin.origin[2] > box.h))
+               return nothing, nothing
+
+           else
+               if (he.isFixed && !he.twin.isFixed)
+                   fixedOne = he
+                   unfixedOne = he.twin
+               else
+                   fixedOne = he.twin
+                   unfixedOne = he
+               end
+
+               fixedOneDistance = norm2(Geometry.subVector(fixedOne.origin, cp1))
+               unfixedOneDistance = norm2(Geometry.subVector(unfixedOne.origin, cp1))
+
+               if fixedOneDistance < unfixedOneDistance
+                   return nothing, nothing
+               end
+           end
+       end
    end
 
    if he.isFixed && inbounds(box, he.origin)
@@ -114,73 +144,6 @@ function intersectEdge(box::Rectangle, he::Diagram.HalfEdge)
    end
 
    return ret1, ret2
-   #println("cp1,2: ", cp1, ", ", cp2)
-
-   ## calculate relative distance to cp1, using x if possible, y otherwise
-   #dir = Geometry.subVector(cp2, cp1)
-   #if dir[1] == 0
-   #   p2 = cp2[2] - cp1[2]
-   #   q1 = he.origin[2] - cp1[2]
-   #   q2 = he.twin.origin[2] - cp1[2]
-   #   if dir[2] < 0
-   #      p2 *= -1
-   #      q1 *= -1
-   #      q2 *= -1
-   #   end
-   #else
-   #   p2 = cp2[1] - cp1[1]
-   #   q1 = he.origin[1] - cp1[1]
-   #   q2 = he.twin.origin[1] - cp1[1]
-   #   if dir[1] < 0
-   #      p2 *= -1
-   #      q1 *= -1
-   #      q2 *= -1
-   #   end
-   #end
-
-   #p1 = 0
-
-   #if !he.isFixed
-   #   q1 = -Inf
-   #end
-
-   #if !he.twin.isFixed
-   #   q2 = Inf
-   #end
-
-   ##println(p1, ", ", p2)
-   ##println(q1, ", ", q2)
-   ##println()
-
-   ## it's guaranteed by construction that p1 <= p2 and q1 <= q2
-
-   #if q2 < p1 || p2 < q1
-   #    println("NOTHING, NOTHING da hora VI p:(", p1, ",", p2, "); q:(", q1, ",", q2, ")")
-   #    if q2 < p1
-   #        println("da hora, q2 < p1")
-   #    end
-   #    if p2 < q1
-   #        println("da hora, p2 < q1")
-   #    end
-   #   return nothing, nothing # no intersection
-   #end
-
-   #if p1 < q1 < p2
-   #   ret1 = he.origin
-   #else
-   #   ret1 = cp1
-   #end
-
-   #if p1 < q2 < p2
-   #   ret2 = he.twin.origin
-   #else
-   #   ret2 = cp2
-   #end
-
-   #println("ret1,2: ", ret1, ", ", ret2)
-   #println("")
-   #println("")
-   #return ret1, ret2
 end
 
 function nextCorner(box::Rectangle, p::Tuple{Real, Real})
@@ -255,15 +218,17 @@ function intersect(V::Diagram.DCEL, box::Rectangle)
             end
          end
 
+         i = 0
+         cycleStart = he
          while he.origin == nothing
             he = he.next
+            i += 1
+
+            if he == cycleStart
+                readline(stdin)
+            end
          end
          region.borderHead = he
-
-         while he.next != nothing && he.next != region.borderHead
-             he = he.next
-         end
-         he = region.borderHead
 
          while true
             while he.next.origin == nothing

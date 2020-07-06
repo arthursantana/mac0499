@@ -20,7 +20,7 @@ function demoLloyd()
 
    command = nothing
    for n in 2:100
-      points = convert(Array{Tuple{Real, Real}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
+      #points = convert(Array{Tuple{Real, Real}}, collect(zip(randf(1, WIDTH-1, n), randf(1, HEIGHT-1, n))))
       #n = 55
       #points = convert(Array{Tuple{Real, Real}}, [(90.0, 90.0),# (80.0, 50), (70.0, 55.0), (30.0, 85.0), (30, 45), (35.0, 44.0),
       #                                            #(1, 90),
@@ -28,6 +28,8 @@ function demoLloyd()
       #                                            (10, 5), (10,10), (10, 20), (80, 20), (30, 20),
       #                                            (1, 1.1), (2, 1.2), (3, 1.3),
       #                                           ])
+      points = convert(Array{Tuple{Real, Real}}, [ (100*0.2219056800797507, 100*0.7000658172436546), (100*0.49169960385155936, 100*0.6636482987025588), (100*0.7618642131758435, 100*0.7432736698473899), (100*0.8846773855975993, 100*0.6317667493965284) ])
+
       max = 20*n
       if max > 100
          max = 100
@@ -51,7 +53,7 @@ function demoLloyd()
             continue
          end
 
-         V = Voronoi.Fortune.compute(points)
+         V = Voronoi.Fortune.compute(points, WIDTH, HEIGHT)
 
          Voronoi.Intersect.intersect(V, Voronoi.Intersect.Rectangle(WIDTH, HEIGHT))
 
