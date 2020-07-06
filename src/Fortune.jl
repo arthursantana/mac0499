@@ -7,7 +7,29 @@ using ..Diagram
 
 @enum SIDE LEFT RIGHT
 
+testRepeat = true
+
 function init(points::Array{Tuple{Real, Real}, 1}, W, H)
+    if testRepeat
+        # test for repeated points
+        repeat = false
+        for i in 1:length(points)
+            for j in 1:length(points)
+                if j == i
+                    continue
+                end
+
+                if points[i][1] == points[j][1] && points[i][2] == points[j][2]
+                    repeat = true
+                    deleteat!(points, j)
+                end
+            end
+        end
+        if repeat
+            println("REPEATED POINTS!")
+        end
+    end
+
 	n = size(points)[1]
 
     V = Diagram.DCEL(points)
