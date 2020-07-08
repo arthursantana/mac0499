@@ -104,30 +104,31 @@ function intersectEdge(box::Rectangle, he::Diagram.HalfEdge)
    end
 
    if !inbounds(box, he.origin) && !inbounds(box, he.twin.origin)
-       if !he.isFixed || !he.twin.isFixed
-           if (he.isFixed && he.twin.isFixed) &&
-               ((he.origin[1] < 0 && he.twin.origin[1] < 0) ||
+       if he.isFixed || he.twin.isFixed
+           if (he.origin[1] < 0 && he.twin.origin[1] < 0) ||
                 (he.origin[1] > box.w && he.twin.origin[1] > box.w) ||
                 (he.origin[2] < 0 && he.twin.origin[2] < 0) ||
-                (he.origin[2] > box.h && he.twin.origin[2] > box.h))
-               return nothing, nothing
+                (he.origin[2] > box.h && he.twin.origin[2] > box.h) # same side
 
-           else
-               if (he.isFixed && !he.twin.isFixed)
-                   fixedOne = he
-                   unfixedOne = he.twin
-               else
-                   fixedOne = he.twin
-                   unfixedOne = he
-               end
+                if he.isFixed && he.twin.isFixed
+                    return nothing, nothing
+                end
 
-               fixedOneDistance = norm2(Geometry.subVector(fixedOne.origin, cp1))
-               unfixedOneDistance = norm2(Geometry.subVector(unfixedOne.origin, cp1))
+                if (he.isFixed && !he.twin.isFixed)
+                    fixedOne = he
+                    unfixedOne = he.twin
+                else
+                    fixedOne = he.twin
+                    unfixedOne = he
+                end
 
-               if fixedOneDistance < unfixedOneDistance
-                   return nothing, nothing
-               end
-           end
+                fixedOneDistance = norm2(Geometry.subVector(fixedOne.origin, cp1))
+                unfixedOneDistance = norm2(Geometry.subVector(unfixedOne.origin, cp1))
+
+                if fixedOneDistance < unfixedOneDistance
+                    return nothing, nothing
+                end
+            end
        end
    end
 

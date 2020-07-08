@@ -7,37 +7,12 @@ using ..Diagram
 
 @enum SIDE LEFT RIGHT
 
-testRepeat = true
-
 function randf(start, finish, n)
    v = rand(n)
    return map(x -> start + x*(finish-start), v)
 end
 
 function init(points::Array{Tuple{Real, Real}, 1}, W, H)
-    if testRepeat
-        repeat = true
-        while repeat
-            repeat = false
-            for i in 1:length(points)
-                for j in 1:length(points)
-                    if j == i
-                        continue
-                    end
-
-                    if points[i][1] == points[j][1] && points[i][2] == points[j][2]
-                        repeat = true
-                        points[j][1] = randf(0, W)
-                        points[j][2] = randf(0, H)
-                    end
-                end
-            end
-            if repeat
-                println("REPEATED POINTS!")
-            end
-        end
-    end
-
 	n = size(points)[1]
 
     V = Diagram.DCEL(points)
