@@ -117,7 +117,7 @@ function init(points::Array{Tuple{Real, Real}, 1}, w::Number, h::Number)
    HEIGHT = h
    pointsₖ = deepcopy(points)
 
-   V = Fortune.compute(points)
+   V = Fortune.compute(points, w, h)
    Intersect.intersect(V, Intersect.Rectangle(WIDTH, HEIGHT))
 
    f = Optimization.f(V)
