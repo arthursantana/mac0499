@@ -10,6 +10,15 @@ mutable struct Rectangle
    h::Real
 end
 
+mutable struct PolygonVertex
+    pos::Tuple{Real, Real}
+    next::Union{PolygonVertex, Nothing}
+end
+
+mutable struct Polygon
+    head::Union{PolygonVertex, Nothing}
+end
+
 function inbounds(box::Rectangle, p::Tuple{Real, Real})
    return (0 <= p[1] <= box.w) && (0 <= p[2] <= box.h)
 end
